@@ -1,0 +1,343 @@
+import os
+import time
+from dotenv import load_dotenv
+from flask import Flask, render_template, request, redirect, url_for
+from google import genai
+import markdown
+
+from database import init_db, save_assessment, get_all_assessments, get_assessment_stats, clear_history
+from questions import SUBJECTS, get_all_subjects, get_subject
+from knowledge_base import generate_offline_study_guide
+
+# Load environment variables
+load_dotenv()
+
+app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY", "learngap_secret_key_2026")
+
+# Ensure database is ready
+init_db()
+
+# --------------------------------------------------
+# Gemini Client & Cascading Configuration
+# --------------------------------------------------
+
+CANDIDATE_MODELS = [
+    "gemini-3.5-flash-lite",
+    "gemini-3.5-flash",
+    "gemini-flash-lite-latest",
+    "gemini-flash-latest"
+]
+
+
+def build_ai_prompt(subject_name, score, total, topic_results, weak_topics,
+                    strong_topics, strongest_topic, weakest_topic):
+    """
+    Constructs a precise, structured educational prompt for Gemini based on actual assessment results.
+    """
+    topic_summary_lines = [f"- {t['topic']}: {t['score']}% ({t['status']})" for t in topic_results]
+    topic_summary_text = "\n".join(topic_summary_lines)
+
+    if weak_topics:
+        weak_list_text = ", ".join(weak_topics)
+        prompt = f"""
+You are LearnGap's AI Study Coach for a college student.
+
+The student recently completed a {subject_name} assessment.
+
+Assessment Results:
+- Overall Score: {score}/{total} ({int((score/total)*100)}%)
+- Strongest Topic on this assessment: {strongest_topic or 'N/A'}
+- Priority Topic needing attention: {weakest_topic or 'N/A'}
+
+Topic Performance Breakdown:
+{topic_summary_text}
+
+Topics requiring attention:
+{weak_list_text}
+
+Instructions:
+1. Use only the supplied assessment results. Do not invent scores, answers, or external history.
+2. Provide brief, encouraging overall feedback acknowledging their effort.
+3. Focus your detailed coaching specifically on the topics that need improvement ({weak_list_text}).
+4. For each weak or needs-improvement topic, provide:
+   • What the topic means in simple words
+   • 3 important concepts to remember
+   • 2 quick hints or memory hooks
+   • 2 common mistakes students make
+   • A practical recommendation for what to practice next
+5. Provide a realistic short study plan (e.g., 3 concrete actionable steps).
+6. Avoid lengthy explanations of topics where the student already scored strongly.
+7. Do not claim that a student has mastered a topic based only on two questions; describe results as performance on this assessment.
+8. Keep language clear, educational, structured with clean markdown headings and bullet points.
+"""
+    else:
+        prompt = f"""
+You are LearnGap's AI Study Coach for a college student.
+
+The student completed a {subject_name} assessment and achieved a perfect or strong score across all topics.
+
+Assessment Results:
+- Overall Score: {score}/{total} ({int((score/total)*100)}%)
+
+Topic Performance Breakdown:
+{topic_summary_text}
+
+Instructions:
+1. All assessed topics in {subject_name} were answered correctly or strongly on this assessment. Do not invent learning gaps.
+2. Provide positive, factual feedback on their solid execution.
+3. Highlight 2-3 important advanced concepts to explore next in {subject_name}.
+4. Provide 3 practical challenge suggestions or real-world project ideas to deepen their knowledge.
+5. Provide one recommended next topic or technical direction for going to the next level.
+6. Do not claim absolute lifelong mastery; describe the result as strong performance on this assessment.
+7. Use clear headings, bullet points, and an encouraging, professional tone.
+"""
+    return prompt.strip()
+
+
+def get_ai_coach_guidance(subject_name, score, total, topic_results,
+                          weak_topics, strong_topics, strongest_topic, weakest_topic):
+    """
+    Attempts to generate AI Study Coach advice using the Gemini API.
+    Cascades through reliable models with backoff retry.
+    Falls back gracefully to the subject-specific offline knowledge base if unavailable.
+    """
+    api_key = os.environ.get("GEMINI_API_KEY")
+    client = None
+
+    if api_key:
+        try:
+            client = genai.Client(api_key=api_key)
+        except Exception as e:
+            print(f"[AI Coach] Gemini client initialization error: {e}")
+
+    prompt = build_ai_prompt(
+        subject_name=subject_name,
+        score=score,
+        total=total,
+        topic_results=topic_results,
+        weak_topics=weak_topics,
+        strong_topics=strong_topics,
+        strongest_topic=strongest_topic,
+        weakest_topic=weakest_topic
+    )
+
+    gemini_text = None
+
+    if client:
+        for model_name in CANDIDATE_MODELS:
+            print(f"[AI Coach] Attempting {subject_name} guidance via {model_name}...")
+            for attempt in range(2):
+                try:
+                    response = client.models.generate_content(
+                        model=model_name,
+                        contents=prompt
+                    )
+                    if response and response.text:
+                        gemini_text = response.text
+                        print(f"[AI Coach] Success with model: {model_name}")
+                        break
+                except Exception as err:
+                    err_str = str(err)
+                    print(f"[AI Coach] {model_name} attempt {attempt + 1} warning: {err_str[:120]}")
+                    if attempt == 0 and ("503" in err_str or "429" in err_str):
+                        time.sleep(1.0)
+                    else:
+                        break
+
+            if gemini_text:
+                break
+
+    if gemini_text:
+        return markdown.markdown(gemini_text, extensions=["extra", "nl2br"])
+
+    # Graceful Offline Knowledge Fallback
+    print(f"[AI Coach] Gemini unavailable for {subject_name}. Serving curated offline knowledge base.")
+    offline_md = generate_offline_study_guide(
+        subject_name=subject_name,
+        score=score,
+        total=total,
+        weak_topics=weak_topics
+    )
+    return markdown.markdown(offline_md, extensions=["extra", "nl2br"])
+
+
+# --------------------------------------------------
+# Routes
+# --------------------------------------------------
+
+@app.route("/")
+def home():
+    """Home / Landing page."""
+    return render_template("index.html")
+
+
+@app.route("/subjects")
+def subjects():
+    """Subject selection catalog containing all 6 active subjects."""
+    all_subjects = get_all_subjects()
+    return render_template("subjects.html", subjects=all_subjects)
+
+
+@app.route("/quiz/<subject_id>")
+def quiz(subject_id):
+    """Conducts a topic-wise assessment for any of the 6 subjects."""
+    subject = get_subject(subject_id)
+    if not subject:
+        return redirect(url_for("subjects"))
+
+    return render_template(
+        "quiz.html",
+        subject=subject,
+        questions=subject["questions"]
+    )
+
+
+@app.route("/submit-quiz", methods=["POST"])
+@app.route("/submit-quiz/<subject_id>", methods=["POST"])
+def submit_quiz(subject_id=None):
+    """
+    Evaluates submitted answers, computes overall and topic-wise gap scores,
+    generates AI Study Coach guidance, saves the assessment, and renders results.
+    """
+    # Fallback to form payload if subject_id not in URL (supports legacy submissions)
+    if not subject_id:
+        subject_id = request.form.get("subject_id", "ml")
+
+    subject = get_subject(subject_id)
+    if not subject:
+        return redirect(url_for("subjects"))
+
+    questions = subject["questions"]
+    total = len(questions)
+
+    # Initialize topic score tracking (each topic has 2 questions)
+    topic_scores = {topic: [0, 0] for topic in subject["topics"]}
+
+    score = 0
+
+    for q in questions:
+        topic = q["topic"]
+        if topic not in topic_scores:
+            topic_scores[topic] = [0, 0]
+
+        topic_scores[topic][1] += 1
+
+        user_answer = request.form.get(f"question_{q['id']}")
+        if user_answer and user_answer.strip() == q["answer"].strip():
+            score += 1
+            topic_scores[topic][0] += 1
+
+    overall_percentage = int((score / total) * 100) if total > 0 else 0
+
+    # Topic-wise performance & gap detection
+    topic_results = []
+    weak_topics = []
+    strong_topics = []
+
+    for topic, (correct, count) in topic_scores.items():
+        pct = int((correct / count) * 100) if count > 0 else 0
+
+        if pct >= 70:
+            status = "Strong"
+            strong_topics.append(topic)
+        elif pct >= 50:
+            status = "Needs Improvement"
+            weak_topics.append(f"{topic} ({pct}%)")
+        else:
+            status = "Weak"
+            weak_topics.append(f"{topic} ({pct}%)")
+
+        topic_results.append({
+            "topic": topic,
+            "correct": correct,
+            "total": count,
+            "score": pct,
+            "status": status
+        })
+
+    # Sort topics to determine strongest and weakest
+    sorted_topics = sorted(topic_results, key=lambda x: x["score"], reverse=True)
+    strongest_topic = sorted_topics[0]["topic"] if sorted_topics and sorted_topics[0]["score"] >= 50 else None
+    weakest_topic = sorted_topics[-1]["topic"] if sorted_topics and sorted_topics[-1]["score"] < 70 else None
+
+    # AI Study Coach Guidance
+    ai_coach = get_ai_coach_guidance(
+        subject_name=subject["name"],
+        score=score,
+        total=total,
+        topic_results=topic_results,
+        weak_topics=weak_topics,
+        strong_topics=strong_topics,
+        strongest_topic=strongest_topic,
+        weakest_topic=weakest_topic
+    )
+
+    # Save to SQLite database
+    try:
+        save_assessment(
+            subject_id=subject["id"],
+            subject_name=subject["name"],
+            score=score,
+            total=total,
+            percentage=overall_percentage,
+            strongest_topic=strongest_topic or "None",
+            weakest_topic=weakest_topic or "None",
+            weak_topics=weak_topics,
+            topic_results=topic_results
+        )
+    except Exception as db_err:
+        print(f"[Database Error] Could not save assessment: {db_err}")
+
+    return render_template(
+        "results.html",
+        subject=subject,
+        subject_id=subject["id"],
+        subject_name=subject["name"],
+        score=score,
+        total=total,
+        percentage=overall_percentage,
+        topic_results=topic_results,
+        strongest_topic=strongest_topic,
+        weakest_topic=weakest_topic,
+        weak_topics=weak_topics,
+        ai_coach=ai_coach
+    )
+
+
+@app.route("/progress")
+def progress():
+    """Displays student assessment history and cross-subject progress tracking."""
+    stats = get_assessment_stats()
+    history = get_all_assessments(limit=50)
+    all_subjects = get_all_subjects()
+
+    return render_template(
+        "progress.html",
+        stats=stats,
+        history=history,
+        subjects=all_subjects
+    )
+
+
+@app.route("/progress/clear", methods=["POST"])
+def clear_progress():
+    """Allows student to clear assessment history."""
+    clear_history()
+    return redirect(url_for("progress"))
+
+
+# --------------------------------------------------
+# Entry Point
+# --------------------------------------------------
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5001))
+    print(f"\n=======================================================")
+    print(f"  LearnGap Server running on http://127.0.0.1:{port}")
+    print(f"=======================================================\n")
+    app.run(
+        host="127.0.0.1",
+        debug=True,
+        port=port
+    )

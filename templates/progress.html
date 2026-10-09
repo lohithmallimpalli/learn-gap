@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Track your learning progress, assessment history, and conceptual gap improvements on LearnGap.">
+    <title>Progress &amp; Analytics &mdash; LearnGap</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=6.0">
+</head>
+
+<body>
+
+    <!-- Unified Glassmorphic Header Navigation -->
+    <nav class="navbar" aria-label="Main Navigation">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <div class="logo-badge" aria-hidden="true">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                        <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                    </svg>
+                </div>
+                Learn<span>Gap</span>
+            </a>
+
+            <div class="nav-links">
+                <a href="/">Dashboard</a>
+                <a href="/subjects">Subjects</a>
+                <a href="/progress" class="nav-link-active">Progress</a>
+                <a href="/study-plan">Study Plan</a>
+                <a href="/resources">Learning Resources</a>
+                <div class="nav-dropdown">
+                    <button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="true">
+                        <span>More</span>
+                        <svg class="dropdown-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                    </button>
+                    <div class="nav-dropdown-menu">
+                        <a href="/#how-it-works">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            <span>How It Works</span>
+                        </a>
+                        <a href="/#about">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                            <span>About SDG 4</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-cta">
+                {% if current_user %}
+                    <a href="/account" class="user-pill">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <span>{{ current_user.name }}</span>
+                    </a>
+                    <a href="/logout" class="btn btn-outline btn-sm">Log Out</a>
+                {% else %}
+                    <a href="/guest" class="btn btn-outline btn-sm nav-btn-guest" title="Explore without creating an account">
+                        Continue as Guest
+                    </a>
+                    <a href="/login" class="btn btn-secondary btn-sm">
+                        Student Login
+                    </a>
+                    <a href="/register" class="btn btn-primary btn-sm">
+                        Create Account
+                    </a>
+                {% endif %}
+                <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle Navigation Menu">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation Drawer -->
+    <div class="mobile-menu-drawer" id="mobileDrawer">
+        <div class="mobile-drawer-label">Navigation</div>
+        <a href="/">Dashboard</a>
+        <a href="/subjects">Subjects</a>
+        <a href="/progress" class="nav-link-active">Progress</a>
+        <a href="/study-plan">Study Plan</a>
+        <a href="/resources">Learning Resources</a>
+        <div class="mobile-drawer-divider"></div>
+        <div class="mobile-drawer-label">Learn More</div>
+        <a href="/#how-it-works">How It Works</a>
+        <a href="/#about">About SDG 4</a>
+        <div class="mobile-drawer-divider"></div>
+        <div class="mobile-drawer-label">Account</div>
+        {% if current_user %}
+            <a href="/account">My Account ({{ current_user.name }})</a>
+            <a href="/logout">Log Out</a>
+        {% else %}
+            <a href="/guest">Continue as Guest</a>
+            <a href="/login">Student Login</a>
+            <a href="/register">Create Account</a>
+        {% endif %}
+    </div>
+
+    <!-- Progress Header Banner -->
+    <section class="hero hero-subpage">
+        <div class="section-container">
+            <div class="section-title" style="margin-bottom: 0;">
+                <span>LONGITUDINAL ANALYTICS</span>
+                <h1 style="font-size: 36px; font-weight: 800; color: var(--navy-900); margin-top: 6px;">
+                    Your Learning Progress
+                </h1>
+                <p>Track your assessment history, monitor accuracy trends across subjects, and verify gap closure.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Progress Analytics Content -->
+    <section class="section" style="padding-top: 48px;">
+        <div class="section-container">
+
+            <!-- Guest Session Notice -->
+            {% if is_guest %}
+            <div class="problem-card reveal-on-scroll" style="background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%); border: 1.5px solid #86efac; border-radius: 16px; padding: 20px 24px; margin-bottom: 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 44px; height: 44px; border-radius: 12px; background: #059669; color: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    </div>
+                    <div>
+                        <strong style="font-size: 1rem; color: #064e3b; display: block; margin-bottom: 2px;">Guest Mode Session History</strong>
+                        <span style="font-size: 0.85rem; color: #047857;">You have {{ stats.total_assessments }} assessment(s) in this temporary browser session. Create a student account to permanently keep your results and access them anytime!</span>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <a href="/register" class="btn btn-primary btn-sm" style="background: #059669; border-color: #059669;">Create Free Account</a>
+                    <a href="/login" class="btn btn-outline btn-sm">Sign In</a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 1. Four Summary Statistics Overview Grid -->
+            <div class="stats-grid-4 reveal-on-scroll">
+                <!-- Stat 1: Total Assessments -->
+                <div class="stat-card-pro stat-accent-teal">
+                    <div class="stat-pro-top">
+                        <span class="stat-pro-label">Total Assessments</span>
+                        <div class="stat-pro-icon" style="background: var(--teal-50); color: var(--teal-700);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                                <path d="m9 14 2 2 4-4"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="stat-pro-val" data-counter="{{ analytics.total_assessments }}">{{ analytics.total_assessments }}</div>
+                        <div class="stat-pro-sub">Assessments Completed &middot; Quizzes logged</div>
+                    </div>
+                </div>
+
+                <!-- Stat 2: Average Score -->
+                <div class="stat-card-pro stat-accent-cyan">
+                    <div class="stat-pro-top">
+                        <span class="stat-pro-label">Average Score</span>
+                        <div class="stat-pro-icon" style="background: var(--cyan-50); color: var(--cyan-700);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="m16 12-4-4-4 4"></path>
+                                <path d="M12 16V8"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="stat-pro-val" {% if analytics.has_data %}data-counter="{{ analytics.avg_score_display }}"{% endif %} style="color: var(--teal-700);">{{ analytics.avg_score_display }}</div>
+                        <div class="stat-pro-sub">Average Accuracy &middot; Cumulative score</div>
+                    </div>
+                </div>
+
+                <!-- Stat 3: Best Score -->
+                <div class="stat-card-pro stat-accent-green">
+                    <div class="stat-pro-top">
+                        <span class="stat-pro-label">Best Score</span>
+                        <div class="stat-pro-icon" style="background: #F0FDF4; color: #059669;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="8" r="7"></circle>
+                                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="stat-pro-val" {% if analytics.has_data %}data-counter="{{ analytics.best_score_display }}"{% endif %} style="color: #059669;">{{ analytics.best_score_display }}</div>
+                        <div class="stat-pro-sub">Highest individual assessment</div>
+                    </div>
+                </div>
+
+                <!-- Stat 4: Weakest Subject -->
+                <div class="stat-card-pro stat-accent-amber">
+                    <div class="stat-pro-top">
+                        <span class="stat-pro-label">Weakest Subject</span>
+                        <div class="stat-pro-icon" style="background: #FEF3C7; color: #D97706;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                                <line x1="12" y1="9" x2="12" y2="13"></line>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="stat-pro-val" style="font-size: {% if analytics.weakest_subject_name and analytics.weakest_subject_name|length > 15 %}20px{% else %}24px{% endif %}; line-height: 1.2; color: {% if analytics.has_data and analytics.weakest_subject_score and analytics.weakest_subject_score < 70 %}var(--danger, #DC2626){% else %}var(--navy-900){% endif %};">
+                            {{ analytics.weakest_subject_name }}
+                        </div>
+                        <div class="stat-pro-sub">
+                            {% if analytics.weakest_subject_score is not none %}
+                            {{ analytics.weakest_subject_score }}% average &middot; Priority review
+                            {% else %}
+                            Baseline not yet established
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recommended Focus Section -->
+            <div class="reveal-on-scroll">
+                <div class="focus-pro-card" style="border-left: 5px solid {% if analytics.recommended_focus.topic %}var(--danger, #DC2626){% elif analytics.has_data %}var(--success, #059669){% else %}var(--teal-700, #0F766E){% endif %};">
+                    <div class="focus-pro-content">
+                        <div class="focus-pro-tag" style="color: {% if analytics.recommended_focus.topic %}var(--danger, #DC2626){% elif analytics.has_data %}var(--success, #059669){% else %}var(--teal-700, #0F766E){% endif %};">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                {% if analytics.recommended_focus.topic %}
+                                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                                <line x1="12" y1="9" x2="12" y2="13"></line>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                {% else %}
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                                {% endif %}
+                            </svg>
+                            RECOMMENDED FOCUS
+                        </div>
+                        <div class="focus-pro-title">{{ analytics.recommended_focus.text }}</div>
+                        <p class="focus-pro-desc">{{ analytics.recommended_focus.detail }}</p>
+                    </div>
+
+                    {% if analytics.recommended_focus.topic and analytics.recommended_focus.resource_url %}
+                    <div>
+                        <a href="{{ analytics.recommended_focus.resource_url }}" class="btn btn-primary btn-sm">
+                            Study {{ analytics.recommended_focus.topic }}
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Subject Performance Section (All 6 Existing Subjects) -->
+            <div class="reveal-on-scroll" style="margin-bottom: 44px;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <span style="font-size: 11px; font-weight: 700; color: var(--teal-700); letter-spacing: 1px; text-transform: uppercase;">CURRICULUM BREAKDOWN</span>
+                        <h3 style="font-size: 22px; color: var(--navy-900); margin: 4px 0 0 0;">Subject Performance &middot; Subject Mastery Comparison</h3>
+                    </div>
+                    <span class="badge-pill badge-neutral">All 6 Core Disciplines</span>
+                </div>
+
+                <div class="subject-perf-grid">
+                    {% for sub in analytics.subjects %}
+                    <div class="subject-perf-card">
+                        <div>
+                            <div class="subject-perf-header">
+                                <h4 class="subject-perf-title">{{ sub.name }}</h4>
+                                <span class="badge-pill {{ sub.status_badge }}">{{ sub.status_text }}</span>
+                            </div>
+
+                            <div class="subject-perf-stats-row">
+                                <div class="subject-perf-stat-col">
+                                    <span class="stat-label">Average Score</span>
+                                    <span class="stat-val" style="color: {% if sub.avg_score is not none %}{% if sub.avg_score >= 70 %}var(--success){% elif sub.avg_score >= 50 %}var(--warning){% else %}var(--danger){% endif %}{% else %}var(--text-light){% endif %};">
+                                        {% if sub.avg_score is not none %}{{ sub.avg_score }}%{% else %}—{% endif %}
+                                    </span>
+                                </div>
+                                <div class="subject-perf-stat-col" style="border-left: 1px solid var(--border-light); padding-left: 16px;">
+                                    <span class="stat-label">Best Score</span>
+                                    <span class="stat-val" style="color: var(--navy-900);">
+                                        {% if sub.best_score is not none %}{{ sub.best_score }}%{% else %}—{% endif %}
+                                    </span>
+                                </div>
+                                <div class="subject-perf-stat-col" style="border-left: 1px solid var(--border-light); padding-left: 16px;">
+                                    <span class="stat-label">Attempts</span>
+                                    <span class="stat-val" style="color: var(--slate-600);">
+                                        {{ sub.attempt_count }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="bar-chart-track" style="margin-top: 8px;">
+                                {% if sub.avg_score is not none %}
+                                <div class="bar-chart-fill {{ sub.tier_class }}" style="width: {{ sub.avg_score }}%;"></div>
+                                {% else %}
+                                <div style="height: 100%; width: 0%;"></div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="subject-perf-actions">
+                            <a href="/quiz/{{ sub.id }}" class="btn {% if sub.has_attempted %}btn-secondary{% else %}btn-primary{% endif %} btn-sm" style="flex: 1;">
+                                {% if sub.has_attempted %}Retake{% else %}Start Quiz{% endif %}
+                            </a>
+                            <a href="/resources?subject={{ sub.id }}" class="btn btn-outline btn-sm" title="Study materials for {{ sub.name }}">
+                                Resources
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Split Analytics Layout: Topic Performance & Learning Pattern (K-Means ML) -->
+            <div class="reveal-on-scroll analytics-split-layout">
+
+                <!-- Topic Performance Visualization (Clean Horizontal Bar Chart) -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <span style="font-size: 11px; font-weight: 700; color: var(--teal-700); letter-spacing: 0.8px; text-transform: uppercase;">DIAGNOSTIC VISUALIZATION</span>
+                            <h3 style="margin-top: 2px;">Topic Performance</h3>
+                        </div>
+                        <span class="badge-pill badge-neutral">{{ analytics.topic_performance | length }} Assessed Topic{% if analytics.topic_performance | length != 1 %}s{% endif %}</span>
+                    </div>
+
+                    {% if analytics.topic_performance %}
+                    <div style="display: flex; flex-direction: column; gap: 14px; padding-top: 6px;">
+                        {% for item in analytics.topic_performance %}
+                        <div class="topic-bar-item">
+                            <div class="topic-bar-top">
+                                <span class="topic-bar-title">{{ item.topic }}</span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="badge-pill {{ item.badge_class }}" style="font-size: 10.5px; padding: 2px 7px;">{{ item.status }}</span>
+                                    <strong style="color: var(--navy-900); font-size: 13.5px;" data-counter="{{ item.score }}%">{{ item.score }}%</strong>
+                                </div>
+                            </div>
+                            <div class="bar-chart-track">
+                                <div class="bar-chart-fill {{ item.tier_class }}" style="width: {{ item.score }}%;"></div>
+                            </div>
+                            <div class="topic-bar-meta">
+                                <span>{{ item.subject_name }} &middot; {{ item.correct }}/{{ item.total }} questions</span>
+                                <a href="/resources?subject={{ item.subject_id }}&topic={{ item.topic | urlencode }}" style="color: var(--teal-700); font-weight: 600; text-decoration: none;">Study Topic &rarr;</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div style="text-align: center; padding: 36px 16px; color: var(--slate-500);">
+                        <div class="summary-icon-box" style="margin: 0 auto 14px auto;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="20" x2="18" y2="10"></line>
+                                <line x1="12" y1="20" x2="12" y2="4"></line>
+                                <line x1="6" y1="20" x2="6" y2="14"></line>
+                            </svg>
+                        </div>
+                        <strong style="color: var(--navy-900); display: block; margin-bottom: 6px;">No Topic Assessment Data Yet</strong>
+                        <p style="font-size: 13.5px; margin: 0 0 16px 0; color: var(--slate-600);">Complete a diagnostic test across any of our 6 subjects to visualize granular topic accuracy here.</p>
+                        <a href="/subjects" class="btn btn-primary btn-sm">Explore Assessments</a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Learning Pattern Section (K-Means ML Analysis) -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <span style="font-size: 11px; font-weight: 700; color: var(--teal-700); letter-spacing: 0.8px; text-transform: uppercase;">UNSUPERVISED ML</span>
+                            <h3 style="margin-top: 2px;">Learning Pattern</h3>
+                        </div>
+                        <span class="badge-pill" style="background: var(--teal-50); color: var(--teal-700); border: 1px solid var(--teal-200); font-size: 11px; font-weight: 600; padding: 3px 8px; display: inline-flex; align-items: center; gap: 4px;">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M12 2v3m0 14v3M2 12h3m14 0h3"></path>
+                            </svg>
+                            K-Means ML
+                        </span>
+                    </div>
+
+                    {% if analytics.ml_analysis and analytics.ml_analysis.groups %}
+                    <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px;">
+                        {% for group in analytics.ml_analysis.groups %}
+                        <div style="background: var(--bg-card-tinted, #FAFCFE); border: 1px solid var(--border-light, #DCE7EF); border-left: 4px solid {{ group.border_color }}; border-radius: 10px; padding: 14px 16px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="font-size: 11.5px; font-weight: 700; letter-spacing: 0.6px; color: {{ group.border_color }}; text-transform: uppercase;">
+                                    {{ group.name }}
+                                </span>
+                                <span class="badge-pill {{ group.badge_class }}" style="font-size: 10.5px; padding: 1px 8px;">
+                                    {{ group.topics|length }} topic{% if group.topics|length != 1 %}s{% endif %}
+                                </span>
+                            </div>
+                            {% if group.topics %}
+                            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px;">
+                                {% for item in group.topics %}
+                                <li style="display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--navy-900);">
+                                    <span style="display: inline-flex; align-items: center; gap: 6px;">
+                                        <span style="color: {{ group.border_color }}; font-size: 14px;">&bull;</span>
+                                        <strong>{{ item.topic }}</strong>
+                                    </span>
+                                    <span style="font-size: 12px; font-weight: 600; color: var(--slate-600);">{{ item.score }}%</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p style="font-size: 12px; color: var(--slate-400); margin: 0; font-style: italic;">
+                                No evaluated topics currently in this tier.
+                            </p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div style="font-size: 12px; color: var(--slate-500); line-height: 1.4; border-top: 1px solid var(--border-light); padding-top: 10px;">
+                        {% if analytics.ml_analysis.status == "success" %}
+                        {{ analytics.ml_analysis.explanation }}
+                        {% else %}
+                        {{ analytics.ml_analysis.message }}
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <!-- Progress History Section (Chronological, Gracefully Omitted if Not Enough Data) -->
+            {% if analytics.has_enough_history %}
+            <div class="chart-card reveal-on-scroll" style="margin-bottom: 40px;">
+                <div class="chart-header">
+                    <div>
+                        <span style="font-size: 11px; font-weight: 700; color: var(--teal-700); letter-spacing: 0.8px; text-transform: uppercase;">ASSESSMENT TIMELINE</span>
+                        <h3 style="margin-top: 2px;">Score Progression History</h3>
+                    </div>
+                    <span class="badge-pill badge-neutral">Chronological Sequence</span>
+                </div>
+
+                <div style="padding-top: 8px;">
+                    {% for pt in chart_points %}
+                    <div class="bar-chart-row">
+                        <div class="bar-chart-labels">
+                            <span style="color: var(--navy-900); font-size: 13.5px; font-weight: 700;">{{ pt.subject }}</span>
+                            <span style="font-weight: 700; color: {% if pt.pct >= 70 %}var(--success){% elif pt.pct >= 50 %}var(--warning){% else %}var(--danger){% endif %}; font-size: 13px;">
+                                {{ pt.pct }}% ({{ pt.score_str }})
+                            </span>
+                        </div>
+                        <div class="bar-chart-track">
+                            <div class="bar-chart-fill {% if pt.pct >= 70 %}bar-fill-strong{% elif pt.pct >= 50 %}bar-fill-improve{% else %}bar-fill-weak{% endif %}"
+                                 style="width: {{ pt.pct }}%;"></div>
+                        </div>
+                        <div style="font-size: 11.5px; color: var(--slate-400); margin-top: 2px;">{{ pt.date }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Historical Assessment Log Table with Dynamic Filter Tabs -->
+            <div class="reveal-on-scroll">
+                <div class="section-title" style="margin-bottom: 24px;">
+                    <span>ASSESSMENT HISTORY</span>
+                    <h2 style="font-size: 24px;">Detailed Assessment Log</h2>
+                </div>
+
+                {% if history %}
+
+                <!-- Dynamic Filter Tabs -->
+                <div class="history-filter-tabs">
+                    <button type="button" class="filter-tab-btn active" onclick="filterHistory('all', this)">
+                        All Attempts ({{ history | length }})
+                    </button>
+                    <button type="button" class="filter-tab-btn" onclick="filterHistory('strong', this)">
+                        Strong (&ge;70%)
+                    </button>
+                    <button type="button" class="filter-tab-btn" onclick="filterHistory('review', this)">
+                        Needs Review (&lt;70%)
+                    </button>
+                </div>
+
+                <div class="problem-card" style="overflow-x: auto; padding: 20px;">
+                    <table id="history-table" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; min-width: 760px;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--border-light); color: var(--text-muted);">
+                                <th style="padding: 12px 10px; font-weight: 700;">Subject</th>
+                                <th style="padding: 12px 10px; font-weight: 700;">Score</th>
+                                <th style="padding: 12px 10px; font-weight: 700;">Status</th>
+                                <th style="padding: 12px 10px; font-weight: 700;">Strongest Area</th>
+                                <th style="padding: 12px 10px; font-weight: 700;">Priority Gap</th>
+                                <th style="padding: 12px 10px; font-weight: 700;">Date &amp; Time</th>
+                                <th style="padding: 12px 10px; text-align: right; font-weight: 700;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in history %}
+                            <tr class="history-row" data-pct="{{ item.percentage }}" style="border-bottom: 1px solid var(--border-light);">
+                                <td style="padding: 14px 10px; font-weight: 700; color: var(--navy-900);">
+                                    {{ item.subject_name }}
+                                </td>
+                                <td style="padding: 14px 10px; font-weight: 600; color: var(--text-primary);">
+                                    {{ item.score }}/{{ item.total }}
+                                </td>
+                                <td style="padding: 14px 10px;">
+                                    {% if item.percentage >= 70 %}
+                                    <span class="badge-pill badge-green">
+                                        {{ item.percentage }}% Strong
+                                    </span>
+                                    {% elif item.percentage >= 50 %}
+                                    <span class="badge-pill badge-amber">
+                                        {{ item.percentage }}% Improve
+                                    </span>
+                                    {% else %}
+                                    <span class="badge-pill badge-red">
+                                        {{ item.percentage }}% Weak
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td style="padding: 14px 10px; color: var(--success); font-weight: 600;">
+                                    {{ item.strongest_topic or '-' }}
+                                </td>
+                                <td style="padding: 14px 10px; color: var(--danger); font-weight: 600;">
+                                    {{ item.weakest_topic or 'None' }}
+                                </td>
+                                <td style="padding: 14px 10px; color: var(--text-muted); font-size: 13px;">
+                                    {{ item.created_at }}
+                                </td>
+                                <td style="padding: 14px 10px; text-align: right; white-space: nowrap;">
+                                    <a href="/results/{{ item.id }}" class="btn btn-secondary btn-sm" style="margin-right: 6px; padding: 5px 10px; font-size: 12px;">
+                                        Breakdown
+                                    </a>
+                                    {% if item.weakest_topic and item.weakest_topic != 'None' %}
+                                    <a href="/resources?subject={{ item.subject_id }}&topic={{ item.weakest_topic | urlencode }}" class="btn btn-outline btn-sm" style="margin-right: 6px; padding: 5px 10px; font-size: 12px; color: var(--warning-text) !important;">
+                                        Study Gaps
+                                    </a>
+                                    {% endif %}
+                                    <a href="/quiz/{{ item.subject_id }}" class="btn btn-primary btn-sm" style="padding: 5px 10px; font-size: 12px;">
+                                        Retake
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="text-align: center; margin-top: 36px;">
+                    <form action="/progress/clear" method="POST" onsubmit="return confirm('Are you sure you want to clear your assessment history? This action cannot be undone.');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                            Clear Assessment History
+                        </button>
+                    </form>
+                </div>
+
+                {% else %}
+
+                <!-- Empty State -->
+                <div class="problem-card" style="max-width: 580px; margin: 0 auto; text-align: center; padding: 48px 24px;">
+                    <div class="summary-icon-box" style="width: 48px; height: 48px; margin: 0 auto 16px auto;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                        </svg>
+                    </div>
+
+                    <h3 style="font-size: 20px; color: var(--navy-900); margin-bottom: 8px;">
+                        {% if current_user %}
+                        Welcome, {{ current_user.name }}! No Assessments Recorded Yet
+                        {% else %}
+                        No Guest Assessments Recorded Yet
+                        {% endif %}
+                    </h3>
+                    <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.5;">
+                        Complete your first topic-wise diagnostic assessment across any of our 6 core computer science subjects to discover your conceptual gaps and generate a personalized 7-day study plan.
+                    </p>
+
+                    <a href="/subjects" class="btn btn-primary btn-md">
+                        Start Your First Assessment
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </a>
+                </div>
+
+                {% endif %}
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Unified Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <div class="logo-badge" style="width: 28px; height: 28px;" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                        </svg>
+                    </div>
+                    Learn<span>Gap</span>
+                </div>
+                <div class="footer-links">
+                    <a href="/">Dashboard</a>
+                    <a href="/subjects">Subjects</a>
+                    <a href="/resources">Learning Resources</a>
+                    <a href="/progress">Progress Dashboard</a>
+                    <a href="/#how-it-works">How It Works</a>
+                    <a href="/#about">SDG 4 Education</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div>Student Learning Gap Finder (LearnGap) &middot; Diagnostic Assessments &amp; Curated Resources</div>
+                <div>Advancing UN Sustainable Development Goal 4 &middot; Quality Education</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Interactive History Filter & Drawer Script -->
+    <script>
+        function filterHistory(filterType, btnElem) {
+            document.querySelectorAll('.filter-tab-btn').forEach(b => b.classList.remove('active'));
+            btnElem.classList.add('active');
+
+            const rows = document.querySelectorAll('.history-row');
+            rows.forEach(r => {
+                const pct = parseInt(r.getAttribute('data-pct'), 10) || 0;
+                if (filterType === 'all') {
+                    r.style.display = '';
+                } else if (filterType === 'strong') {
+                    r.style.display = (pct >= 70) ? '' : 'none';
+                } else if (filterType === 'review') {
+                    r.style.display = (pct < 70) ? '' : 'none';
+                }
+            });
+        }
+
+        // Mobile drawer toggle
+        const toggle = document.getElementById('mobileNavToggle');
+        const drawer = document.getElementById('mobileDrawer');
+        if (toggle && drawer) {
+            toggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                drawer.classList.toggle('open');
+            });
+            document.addEventListener('click', function(e) {
+                if (!toggle.contains(e.target) && !drawer.contains(e.target)) {
+                    drawer.classList.remove('open');
+                }
+            });
+        }
+    </script>
+    <script src="{{ url_for('static', filename='animations.js') }}"></script>
+</body>
+
+</html>

@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Curated books, documentation, tutorials, and courses for computer science topics on LearnGap.">
+    <title>Learning Resources &mdash; LearnGap</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=6.0">
+</head>
+
+<body>
+
+    <!-- Unified Glassmorphic Header Navigation -->
+    <nav class="navbar" aria-label="Main Navigation">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <div class="logo-badge" aria-hidden="true">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                        <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                    </svg>
+                </div>
+                Learn<span>Gap</span>
+            </a>
+
+            <div class="nav-links">
+                <a href="/">Dashboard</a>
+                <a href="/subjects">Subjects</a>
+                <a href="/progress">Progress</a>
+                <a href="/study-plan">Study Plan</a>
+                <a href="/resources" class="nav-link-active">Learning Resources</a>
+                <div class="nav-dropdown">
+                    <button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="true">
+                        <span>More</span>
+                        <svg class="dropdown-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                    </button>
+                    <div class="nav-dropdown-menu">
+                        <a href="/#how-it-works">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            <span>How It Works</span>
+                        </a>
+                        <a href="/#about">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                            <span>About SDG 4</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-cta">
+                {% if current_user %}
+                    <a href="/account" class="user-pill">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <span>{{ current_user.name }}</span>
+                    </a>
+                    <a href="/logout" class="btn btn-outline btn-sm">Log Out</a>
+                {% else %}
+                    <a href="/guest" class="btn btn-outline btn-sm nav-btn-guest" title="Explore without creating an account">
+                        Continue as Guest
+                    </a>
+                    <a href="/login" class="btn btn-secondary btn-sm">
+                        Student Login
+                    </a>
+                    <a href="/register" class="btn btn-primary btn-sm">
+                        Create Account
+                    </a>
+                {% endif %}
+                <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle Navigation Menu">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation Drawer -->
+    <div class="mobile-menu-drawer" id="mobileDrawer">
+        <div class="mobile-drawer-label">Navigation</div>
+        <a href="/">Dashboard</a>
+        <a href="/subjects">Subjects</a>
+        <a href="/progress">Progress</a>
+        <a href="/study-plan">Study Plan</a>
+        <a href="/resources" class="nav-link-active">Learning Resources</a>
+        <div class="mobile-drawer-divider"></div>
+        <div class="mobile-drawer-label">Learn More</div>
+        <a href="/#how-it-works">How It Works</a>
+        <a href="/#about">About SDG 4</a>
+        <div class="mobile-drawer-divider"></div>
+        <div class="mobile-drawer-label">Account</div>
+        {% if current_user %}
+            <a href="/account">My Account ({{ current_user.name }})</a>
+            <a href="/logout">Log Out</a>
+        {% else %}
+            <a href="/guest">Continue as Guest</a>
+            <a href="/login">Student Login</a>
+            <a href="/register">Create Account</a>
+        {% endif %}
+    </div>
+
+    <!-- Resources Header & Search / Filters -->
+    <section class="hero hero-subpage">
+        <div class="section-container">
+
+            <div class="section-title" style="margin-bottom: 28px;">
+                <span>CURATED STUDY CATALOGUE</span>
+                <h1 style="font-size: 36px; font-weight: 800; color: var(--navy-900); margin-top: 6px;">
+                    Learning Resources
+                </h1>
+                <p>
+                    Learn smarter with curated study materials for your learning gaps.
+                </p>
+            </div>
+
+            <!-- Search & Filter Toolbar -->
+            <div class="resource-filter-container">
+                <form id="resource-filter-form" action="/resources" method="GET">
+
+                    <!-- Search Bar -->
+                    <div class="search-input-wrap">
+                        <svg class="search-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text"
+                               id="search-input"
+                               name="q"
+                               value="{{ active_filters.q or '' }}"
+                               placeholder="Search resources by title, topic, algorithm, author, or keyword (e.g. 'K-Means', 'CLRS', 'SQL Joins')...">
+                    </div>
+
+                    <!-- Filter Dropdowns Grid -->
+                    <div class="filter-grid">
+
+                        <!-- Subject Filter -->
+                        <div class="filter-group">
+                            <label for="filter-subject">Subject</label>
+                            <select id="filter-subject" name="subject" class="filter-select" onchange="this.form.submit()">
+                                <option value="all" {% if active_filters.subject == 'all' or not active_filters.subject %}selected{% endif %}>All Subjects</option>
+                                {% for s_key, s_data in subjects_map.items() %}
+                                <option value="{{ s_key }}" {% if active_filters.subject == s_key %}selected{% endif %}>{{ s_data.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Topic Filter -->
+                        <div class="filter-group">
+                            <label for="filter-topic">Topic</label>
+                            <select id="filter-topic" name="topic" class="filter-select" onchange="this.form.submit()">
+                                <option value="all" {% if active_filters.topic == 'all' or not active_filters.topic %}selected{% endif %}>All Topics</option>
+                                {% for top in available_topics %}
+                                <option value="{{ top }}" {% if active_filters.topic == top %}selected{% endif %}>{{ top }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Resource Type Filter -->
+                        <div class="filter-group">
+                            <label for="filter-type">Resource Type</label>
+                            <select id="filter-type" name="type" class="filter-select" onchange="this.form.submit()">
+                                <option value="all" {% if active_filters.type == 'all' or not active_filters.type %}selected{% endif %}>All Types</option>
+                                <option value="Book / Reference" {% if active_filters.type == 'Book / Reference' %}selected{% endif %}>Books &amp; References</option>
+                                <option value="YouTube Tutorial" {% if active_filters.type == 'YouTube Tutorial' %}selected{% endif %}>YouTube Tutorials</option>
+                                <option value="Official Documentation" {% if active_filters.type == 'Official Documentation' %}selected{% endif %}>Official Documentation</option>
+                                <option value="Free Course" {% if active_filters.type == 'Free Course' %}selected{% endif %}>Free Courses</option>
+                                <option value="Interactive Practice" {% if active_filters.type == 'Interactive Practice' %}selected{% endif %}>Interactive Practice</option>
+                            </select>
+                        </div>
+
+                        <!-- Difficulty Filter -->
+                        <div class="filter-group">
+                            <label for="filter-difficulty">Difficulty</label>
+                            <select id="filter-difficulty" name="difficulty" class="filter-select" onchange="this.form.submit()">
+                                <option value="all" {% if active_filters.difficulty == 'all' or not active_filters.difficulty %}selected{% endif %}>All Levels</option>
+                                <option value="Beginner" {% if active_filters.difficulty == 'Beginner' %}selected{% endif %}>Beginner</option>
+                                <option value="Intermediate" {% if active_filters.difficulty == 'Intermediate' %}selected{% endif %}>Intermediate</option>
+                                <option value="Advanced" {% if active_filters.difficulty == 'Advanced' %}selected{% endif %}>Advanced</option>
+                            </select>
+                        </div>
+
+                        <!-- Access Filter -->
+                        <div class="filter-group">
+                            <label for="filter-access">Access</label>
+                            <select id="filter-access" name="access" class="filter-select" onchange="this.form.submit()">
+                                <option value="all" {% if active_filters.access == 'all' or not active_filters.access %}selected{% endif %}>All Access</option>
+                                <option value="Free" {% if active_filters.access == 'Free' %}selected{% endif %}>Free Only</option>
+                                <option value="Paid" {% if active_filters.access == 'Paid' %}selected{% endif %}>Books / References</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <!-- Toolbar Footer: Count & Reset -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-light); flex-wrap: wrap; gap: 10px;">
+                        <div style="font-size: 13.5px; color: var(--text-muted);">
+                            Showing <strong style="color: var(--navy-900);">{{ resources | length }}</strong> curated resource(s)
+                        </div>
+
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            {% if active_filters.q or active_filters.subject != 'all' or active_filters.topic != 'all' or active_filters.type != 'all' or active_filters.difficulty != 'all' or active_filters.access != 'all' %}
+                            <a href="/resources" class="btn btn-danger btn-sm">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                                Clear All Filters
+                            </a>
+                            {% endif %}
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                Apply Filters
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Main Content: Personalized Recommendations & Filtered Catalog -->
+    <section class="section" style="padding-top: 24px;">
+        <div class="section-container">
+
+            <!-- ============================================================== -->
+            <!-- Recommended For You (Personalized from Assessment History)    -->
+            <!-- ============================================================== -->
+            {% if recommended_resources and not active_filters.q %}
+            <div class="reveal-on-scroll" style="margin-bottom: 56px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--border-light); flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <span style="font-size: 11.5px; font-weight: 800; color: var(--teal-700); letter-spacing: 1.5px; text-transform: uppercase;">
+                            ADAPTIVE RECOMMENDATIONS
+                        </span>
+                        <h2 style="font-size: 24px; font-weight: 800; color: var(--navy-900); margin-top: 4px;">
+                            Recommended for You
+                        </h2>
+                    </div>
+
+                    {% if latest_assessment %}
+                    <span style="font-size: 13px; color: var(--text-muted);">
+                        Prioritizing gaps from your latest <strong>{{ latest_assessment.subject_name }}</strong> assessment
+                    </span>
+                    {% else %}
+                    <a href="/subjects" class="btn btn-outline btn-sm">
+                        Take a Quiz to Personalize &rarr;
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div class="resource-grid">
+                    {% for res in recommended_resources %}
+                    <div class="resource-card recommended-border">
+                        <div>
+                            <!-- Personalized Reason Banner -->
+                            {% if res.recommendation_reason %}
+                            <div style="background: var(--teal-50); border: 1px solid var(--teal-100); border-radius: var(--radius-sm); padding: 8px 12px; margin-bottom: 12px; font-size: 12px; color: var(--teal-700); line-height: 1.4; display: flex; align-items: flex-start; gap: 6px;">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                </svg>
+                                <span>{{ res.recommendation_reason }}</span>
+                            </div>
+                            {% endif %}
+
+                            <!-- Metadata Badges -->
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;">
+                                <span class="badge-pill type-badge">{{ res.resource_type }}</span>
+                                <span class="badge-pill diff-badge">{{ res.difficulty }}</span>
+                                <span class="badge-pill access-badge {% if 'Free' in res.access_type %}free{% else %}paid{% endif %}">
+                                    {{ res.access_type }}
+                                </span>
+                            </div>
+
+                            <h4>{{ res.title }}</h4>
+
+                            <div class="resource-meta">
+                                {{ res.provider }} &middot; <span>{{ res.topic }}</span>
+                            </div>
+
+                            <p>{{ res.description }}</p>
+                        </div>
+
+                        <!-- Card Action Footer -->
+                        <div class="resource-card-footer">
+                            <button type="button"
+                                    class="bookmark-btn {% if res.id in bookmarked_ids %}active{% endif %}"
+                                    onclick="toggleBookmark('{{ res.id }}', this)"
+                                    title="Bookmark this resource">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                </svg>
+                                <span class="bookmark-text">{% if res.id in bookmarked_ids %}Bookmarked{% else %}Bookmark{% endif %}</span>
+                            </button>
+
+                            <a href="{{ res.url }}" target="_blank" rel="noopener noreferrer" class="open-resource-btn">
+                                Open Resource
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="7" y1="17" x2="17" y2="7"></line>
+                                    <polyline points="7 7 17 7 17 17"></polyline>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ============================================================== -->
+            <!-- Filtered Catalog Grid                                          -->
+            <!-- ============================================================== -->
+            <div class="reveal-on-scroll">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <h2 style="font-size: 22px; font-weight: 800; color: var(--navy-900);">
+                        {% if active_filters.subject and active_filters.subject != 'all' %}
+                            {{ subjects_map[active_filters.subject].name }} Resources
+                        {% else %}
+                            All Curated Resources
+                        {% endif %}
+                    </h2>
+
+                    <span style="font-size: 13.5px; color: var(--text-muted);">
+                        {{ resources | length }} materials available
+                    </span>
+                </div>
+
+                {% if resources %}
+                <div class="resource-grid">
+                    {% for res in resources %}
+                    <div class="resource-card">
+                        <div>
+                            <!-- Badges -->
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;">
+                                <span class="badge-pill type-badge">{{ res.resource_type }}</span>
+                                <span class="badge-pill diff-badge">{{ res.difficulty }}</span>
+                                <span class="badge-pill access-badge {% if 'Free' in res.access_type %}free{% else %}paid{% endif %}">
+                                    {{ res.access_type }}
+                                </span>
+                            </div>
+
+                            <h4>{{ res.title }}</h4>
+
+                            <div class="resource-meta">
+                                {{ res.provider }} &middot; <span>{{ res.topic }}</span>
+                            </div>
+
+                            <p>{{ res.description }}</p>
+                        </div>
+
+                        <!-- Card Action Footer -->
+                        <div class="resource-card-footer">
+                            <button type="button"
+                                    class="bookmark-btn {% if res.id in bookmarked_ids %}active{% endif %}"
+                                    onclick="toggleBookmark('{{ res.id }}', this)"
+                                    title="Bookmark this resource">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                </svg>
+                                <span class="bookmark-text">{% if res.id in bookmarked_ids %}Bookmarked{% else %}Bookmark{% endif %}</span>
+                            </button>
+
+                            <a href="{{ res.url }}" target="_blank" rel="noopener noreferrer" class="open-resource-btn">
+                                Open Resource
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="7" y1="17" x2="17" y2="7"></line>
+                                    <polyline points="7 7 17 7 17 17"></polyline>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+
+                <!-- Clean Empty State -->
+                <div class="problem-card" style="max-width: 580px; margin: 40px auto; text-align: center; padding: 48px 24px;">
+                    <div class="summary-icon-box" style="width: 48px; height: 48px; margin: 0 auto 16px auto;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </div>
+
+                    <h3 style="font-size: 20px; color: var(--navy-900); margin-bottom: 8px;">No Matching Resources Found</h3>
+                    <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 24px;">
+                        We couldn't find any resources matching your search query or filter criteria. Try adjusting or clearing your filters.
+                    </p>
+
+                    <a href="/resources" class="btn btn-primary btn-md">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                        Reset All Filters
+                    </a>
+                </div>
+
+                {% endif %}
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Unified Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <div class="logo-badge" style="width: 28px; height: 28px;" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                        </svg>
+                    </div>
+                    Learn<span>Gap</span>
+                </div>
+                <div class="footer-links">
+                    <a href="/">Dashboard</a>
+                    <a href="/subjects">Subjects</a>
+                    <a href="/resources">Learning Resources</a>
+                    <a href="/progress">Progress Dashboard</a>
+                    <a href="/#how-it-works">How It Works</a>
+                    <a href="/#about">SDG 4 Education</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div>Student Learning Gap Finder (LearnGap) &middot; Diagnostic Assessments &amp; Curated Resources</div>
+                <div>Advancing UN Sustainable Development Goal 4 &middot; Quality Education</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Interactive Scripts: Bookmarking & Mobile Drawer -->
+    <script>
+        function toggleBookmark(resourceId, btnElem) {
+            fetch('/api/bookmark', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ resource_id: resourceId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                const label = btnElem.querySelector('.bookmark-text');
+                if (data.bookmarked) {
+                    btnElem.classList.add('active');
+                    if (label) label.innerText = 'Bookmarked';
+                } else {
+                    btnElem.classList.remove('active');
+                    if (label) label.innerText = 'Bookmark';
+                }
+            })
+            .catch(err => {
+                console.error("Bookmark toggle error:", err);
+            });
+        }
+
+        // Mobile drawer toggle
+        const toggle = document.getElementById('mobileNavToggle');
+        const drawer = document.getElementById('mobileDrawer');
+        if (toggle && drawer) {
+            toggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                drawer.classList.toggle('open');
+            });
+            document.addEventListener('click', function(e) {
+                if (!toggle.contains(e.target) && !drawer.contains(e.target)) {
+                    drawer.classList.remove('open');
+                }
+            });
+        }
+    </script>
+    <script src="{{ url_for('static', filename='animations.js') }}"></script>
+</body>
+
+</html>

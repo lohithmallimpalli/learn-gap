@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Take the {{ subject.name }} diagnostic assessment to identify your learning gaps on LearnGap.">
+    <title>{{ subject.name }} Assessment — LearnGap</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=6.0">
+</head>
+
+<body>
+
+    <!-- Unified Glassmorphic Header Navigation -->
+    <nav class="navbar" aria-label="Main Navigation">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <div class="logo-badge" aria-hidden="true">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                        <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                    </svg>
+                </div>
+                Learn<span>Gap</span>
+            </a>
+
+            <div class="nav-links">
+                <a href="/">Dashboard</a>
+                <a href="/subjects" class="nav-link-active">Subjects</a>
+                <a href="/progress">Progress</a>
+                <a href="/study-plan">Study Plan</a>
+                <a href="/resources">Learning Resources</a>
+                <div class="nav-dropdown">
+                    <button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="true">
+                        <span>More</span>
+                        <svg class="dropdown-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                    </button>
+                    <div class="nav-dropdown-menu">
+                        <a href="/#how-it-works">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            <span>How It Works</span>
+                        </a>
+                        <a href="/#about">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                            <span>About SDG 4</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-cta">
+                <a href="/subjects" class="btn btn-outline btn-sm">
+                    All Subjects
+                </a>
+                {% if current_user %}
+                    <a href="/account" class="user-pill">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <span>{{ current_user.name }}</span>
+                    </a>
+                {% endif %}
+                <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle Navigation Menu">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation Drawer -->
+    <div class="mobile-menu-drawer" id="mobileDrawer">
+        <div class="mobile-drawer-label">Navigation</div>
+        <a href="/">Dashboard</a>
+        <a href="/subjects" class="nav-link-active">Subjects</a>
+        <a href="/progress">Progress</a>
+        <a href="/study-plan">Study Plan</a>
+        <a href="/resources">Learning Resources</a>
+        <div class="mobile-drawer-divider"></div>
+        <div class="mobile-drawer-label">Learn More</div>
+        <a href="/#how-it-works">How It Works</a>
+        <a href="/#about">About SDG 4</a>
+        <div class="mobile-drawer-divider"></div>
+        <div class="mobile-drawer-label">Actions</div>
+        <a href="/subjects">All Subjects</a>
+        {% if current_user %}
+            <a href="/account">My Account ({{ current_user.name }})</a>
+            <a href="/logout">Log Out</a>
+        {% endif %}
+    </div>
+
+    <!-- Quiz Header Banner -->
+    <section class="hero hero-subpage">
+        <div class="section-container quiz-container">
+            <div class="section-title" style="margin-bottom: 0;">
+                <span>{{ subject.name | upper }} ASSESSMENT</span>
+                <h1 style="font-size: 36px; font-weight: 800; color: var(--navy-900); margin-top: 6px;">
+                    Test Your Knowledge
+                </h1>
+                <p>Answer all 10 questions across 5 core topics to identify your conceptual strengths and learning gaps.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quiz Stepper Container -->
+    <section class="section" style="padding-top: 40px; min-height: 70vh;">
+        <div class="section-container quiz-container">
+
+            <!-- Stepper Progress Header -->
+            <div class="quiz-progress-header">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span id="question-tracker" style="font-weight: 700; color: var(--navy-900); font-size: 15px;">
+                        Question 1 of {{ questions | length }}
+                    </span>
+                    <span id="answered-tracker" class="badge-pill badge-teal">
+                        Answered: 0/{{ questions | length }}
+                    </span>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="quiz-progress-track">
+                    <div id="quiz-progress-bar" class="quiz-progress-fill" style="width: 10%;"></div>
+                </div>
+
+                <!-- Question Quick Jump Nav -->
+                <div class="question-pills">
+                    {% for q in questions %}
+                    <button type="button" class="q-pill {% if loop.first %}active{% endif %}" id="pill-{{ loop.index }}" onclick="goToQuestion({{ loop.index }})" aria-label="Go to question {{ loop.index }}">
+                        {{ loop.index }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Assessment Form -->
+            <form id="quiz-form" action="/submit-quiz/{{ subject.id }}" method="POST">
+                <input type="hidden" name="subject_id" value="{{ subject.id }}">
+
+                {% for question in questions %}
+                {% set q_idx = loop.index %}
+
+                <div class="quiz-card {% if not loop.first %}hidden-question{% endif %}" id="question-card-{{ loop.index }}">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <span class="number" style="margin-bottom: 0;">
+                            QUESTION {{ loop.index }}
+                        </span>
+                        <span class="badge-pill badge-neutral">
+                            Topic: {{ question.topic }}
+                        </span>
+                    </div>
+
+                    <h3>{{ question.question }}</h3>
+
+                    <div class="options-container" role="radiogroup" aria-labelledby="question-card-{{ loop.index }}">
+                        {% for option in question.options %}
+                        <label class="quiz-option-label" id="label-{{ question.id }}-{{ loop.index }}">
+                            <input type="radio"
+                                   name="question_{{ question.id }}"
+                                   value="{{ option }}"
+                                   onchange="handleOptionSelect({{ q_idx }}, '{{ question.id }}-{{ loop.index }}')">
+                            <span class="quiz-option-text">{{ option }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Unanswered Warning Notice -->
+                <div id="unanswered-alert" style="display: none; padding: 14px 18px; background: var(--danger-bg); border: 1px solid var(--danger-border); border-radius: var(--radius-md); color: var(--danger-text); font-size: 14px; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        <span>Please answer all questions before submitting. Missing: <strong id="unanswered-list"></strong></span>
+                    </div>
+                </div>
+
+                <!-- Stepper Action Buttons -->
+                <div class="quiz-nav-actions">
+                    <button type="button" id="prev-btn" class="btn btn-secondary btn-md" onclick="prevQuestion()" disabled>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                        Previous
+                    </button>
+
+                    <div style="display: flex; gap: 12px;">
+                        <button type="button" id="next-btn" class="btn btn-primary btn-md" onclick="nextQuestion()">
+                            Next
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </button>
+
+                        <button type="submit" id="submit-btn" class="btn btn-primary btn-md" style="display: none; background: var(--success); border-color: var(--success);">
+                            Submit Assessment
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Lightweight Assessment Submission & AI Guidance Loading Overlay -->
+            <div id="quiz-submitting-modal" class="quiz-submitting-modal" style="display: none;" aria-live="polite" aria-label="Assessment submission progress">
+                <div class="submitting-card">
+                    <div class="submitting-spinner-container">
+                        <div class="submitting-spinner-pulse"></div>
+                        <svg class="submitting-spinner-ring" width="48" height="48" viewBox="0 0 48 48" fill="none">
+                            <circle cx="24" cy="24" r="20" stroke="rgba(15, 118, 110, 0.15)" stroke-width="4"></circle>
+                            <circle class="submitting-spinner-arc" cx="24" cy="24" r="20" stroke="var(--teal-700)" stroke-width="4" stroke-linecap="round"></circle>
+                        </svg>
+                        <div class="submitting-ai-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal-700)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <h3 class="submitting-title">Analyzing Your Assessment</h3>
+                    <p class="submitting-message" id="submitting-status-text">Grading your responses across all topics...</p>
+                    <div class="submitting-progress-track">
+                        <div class="submitting-progress-bar"></div>
+                    </div>
+                    <div class="submitting-subtext">
+                        <span class="subtext-dot"></span>
+                        Synthesizing topic gaps &amp; consulting AI Study Coach
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Unified Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <div class="logo-badge" style="width: 28px; height: 28px;" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                        </svg>
+                    </div>
+                    Learn<span>Gap</span>
+                </div>
+                <div class="footer-links">
+                    <a href="/">Dashboard</a>
+                    <a href="/subjects">Subjects</a>
+                    <a href="/resources">Learning Resources</a>
+                    <a href="/progress">Progress Dashboard</a>
+                    <a href="/#how-it-works">How It Works</a>
+                    <a href="/#about">SDG 4 Education</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div>Student Learning Gap Finder (LearnGap) &middot; Diagnostic Assessments &amp; Curated Resources</div>
+                <div>Advancing UN Sustainable Development Goal 4 &middot; Quality Education</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Animation Engine & Interactive Stepper Script -->
+    <script src="{{ url_for('static', filename='animations.js') }}"></script>
+    <script>
+        let currentQuestion = 1;
+        const totalQuestions = {{ questions | length }};
+        const answeredMap = {};
+
+        function updateUI() {
+            for (let i = 1; i <= totalQuestions; i++) {
+                const card = document.getElementById(`question-card-${i}`);
+                const pill = document.getElementById(`pill-${i}`);
+                if (card) {
+                    if (i === currentQuestion) {
+                        card.classList.remove('hidden-question');
+                    } else {
+                        card.classList.add('hidden-question');
+                    }
+                }
+                if (pill) {
+                    if (i === currentQuestion) {
+                        pill.classList.add('active');
+                    } else {
+                        pill.classList.remove('active');
+                    }
+                }
+            }
+
+            document.getElementById('question-tracker').innerText = `Question ${currentQuestion} of ${totalQuestions}`;
+            const answeredCount = Object.keys(answeredMap).length;
+            document.getElementById('answered-tracker').innerText = `Answered: ${answeredCount}/${totalQuestions}`;
+
+            const pct = (currentQuestion / totalQuestions) * 100;
+            document.getElementById('quiz-progress-bar').style.width = `${pct}%`;
+
+            // Ensure visual selection highlight is preserved when navigating
+            const activeCard = document.getElementById(`question-card-${currentQuestion}`);
+            if (activeCard) {
+                const checkedRadio = activeCard.querySelector('input[type="radio"]:checked');
+                if (checkedRadio) {
+                    const label = checkedRadio.closest('.quiz-option-label');
+                    if (label) {
+                        activeCard.querySelectorAll('.quiz-option-label').forEach(l => l.classList.remove('selected-option'));
+                        label.classList.add('selected-option');
+                    }
+                }
+            }
+
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const submitBtn = document.getElementById('submit-btn');
+
+            prevBtn.disabled = (currentQuestion === 1);
+
+            if (currentQuestion === totalQuestions) {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'inline-flex';
+            } else {
+                nextBtn.style.display = 'inline-flex';
+                submitBtn.style.display = 'none';
+            }
+        }
+
+        // Initialize any pre-selected or restored answers
+        function initAnsweredState() {
+            for (let i = 1; i <= totalQuestions; i++) {
+                const card = document.getElementById(`question-card-${i}`);
+                if (card) {
+                    const checkedRadio = card.querySelector('input[type="radio"]:checked');
+                    if (checkedRadio) {
+                        answeredMap[i] = true;
+                        const pill = document.getElementById(`pill-${i}`);
+                        if (pill) pill.classList.add('answered');
+                        const label = checkedRadio.closest('.quiz-option-label');
+                        if (label) label.classList.add('selected-option');
+                    }
+                }
+            }
+        }
+
+        function goToQuestion(qNum) {
+            if (qNum >= 1 && qNum <= totalQuestions) {
+                currentQuestion = qNum;
+                updateUI();
+                const card = document.getElementById(`question-card-${qNum}`);
+                if (card) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < totalQuestions) {
+                currentQuestion++;
+                updateUI();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestion > 1) {
+                currentQuestion--;
+                updateUI();
+            }
+        }
+
+        function handleOptionSelect(qIndex, labelId) {
+            answeredMap[qIndex] = true;
+
+            const pill = document.getElementById(`pill-${qIndex}`);
+            if (pill) {
+                pill.classList.add('answered');
+            }
+
+            const card = document.getElementById(`question-card-${qIndex}`);
+            if (card) {
+                const labels = card.querySelectorAll('.quiz-option-label');
+                labels.forEach(l => l.classList.remove('selected-option'));
+            }
+            const activeLabel = document.getElementById(`label-${labelId}`);
+            if (activeLabel) {
+                activeLabel.classList.add('selected-option');
+            }
+
+            document.getElementById('unanswered-alert').style.display = 'none';
+
+            const answeredCount = Object.keys(answeredMap).length;
+            document.getElementById('answered-tracker').innerText = `Answered: ${answeredCount}/${totalQuestions}`;
+        }
+
+        document.getElementById('quiz-form').addEventListener('submit', function(e) {
+            const missing = [];
+            for (let i = 1; i <= totalQuestions; i++) {
+                if (!answeredMap[i]) {
+                    missing.push(i);
+                }
+            }
+
+            if (missing.length > 0) {
+                e.preventDefault();
+                const alertBox = document.getElementById('unanswered-alert');
+                document.getElementById('unanswered-list').innerText = `Questions ${missing.join(', ')}`;
+                alertBox.style.display = 'block';
+                goToQuestion(missing[0]);
+                return false;
+            }
+
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `
+                <svg class="spinner-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+                    <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+                    <path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1"></path>
+                </svg>
+                Evaluating &amp; Consulting AI Coach...
+            `;
+            submitBtn.style.opacity = '0.85';
+            submitBtn.style.cursor = 'wait';
+
+            // Reveal the lightweight loading animation overlay
+            const modal = document.getElementById('quiz-submitting-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                const statusText = document.getElementById('submitting-status-text');
+                const stages = [
+                    'Grading your responses across all topics...',
+                    'Mapping your conceptual strengths and learning gaps...',
+                    'Consulting LearnGap AI Study Coach for personalized guidance...',
+                    'Compiling your tailored diagnostic report...'
+                ];
+                let stageIdx = 0;
+                setInterval(() => {
+                    stageIdx = (stageIdx + 1) % stages.length;
+                    if (statusText) statusText.innerText = stages[stageIdx];
+                }, 1300);
+            }
+        });
+
+        // Mobile drawer toggle
+        const toggle = document.getElementById('mobileNavToggle');
+        const drawer = document.getElementById('mobileDrawer');
+        if (toggle && drawer) {
+            toggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                drawer.classList.toggle('open');
+            });
+            document.addEventListener('click', function(e) {
+                if (!toggle.contains(e.target) && !drawer.contains(e.target)) {
+                    drawer.classList.remove('open');
+                }
+            });
+        }
+
+        // Initialize state
+        initAnsweredState();
+        updateUI();
+    </script>
+
+</body>
+
+</html>

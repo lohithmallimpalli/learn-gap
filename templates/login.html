@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sign in to your LearnGap student account to access persistent assessment history and AI study coach.">
+    <title>Student Login — LearnGap</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=6.0">
+</head>
+
+<body>
+
+    <!-- Unified Glassmorphic Header Navigation -->
+    <nav class="navbar" aria-label="Main Navigation">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <div class="logo-badge" aria-hidden="true">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                        <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                    </svg>
+                </div>
+                Learn<span>Gap</span>
+            </a>
+
+            <div class="nav-links">
+                <a href="/">Dashboard</a>
+                <a href="/subjects">Subjects</a>
+                <a href="/progress">Progress</a>
+                <a href="/study-plan">Study Plan</a>
+                <a href="/resources">Learning Resources</a>
+                <div class="nav-dropdown">
+                    <button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="true">
+                        <span>More</span>
+                        <svg class="dropdown-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                    </button>
+                    <div class="nav-dropdown-menu">
+                        <a href="/#how-it-works">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            <span>How It Works</span>
+                        </a>
+                        <a href="/#about">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                            <span>About SDG 4</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-cta">
+                <a href="/guest" class="btn btn-outline btn-sm nav-btn-guest" title="Explore without creating an account">
+                    Continue as Guest
+                </a>
+                <a href="/register" class="btn btn-primary btn-sm">
+                    Create Account
+                </a>
+                <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle Navigation Menu">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation Drawer -->
+    <div class="mobile-menu-drawer" id="mobileDrawer">
+        <div class="mobile-drawer-label">Navigation</div>
+        <a href="/">Dashboard</a>
+        <a href="/subjects">Subjects</a>
+        <a href="/progress">Progress</a>
+        <a href="/study-plan">Study Plan</a>
+        <a href="/resources">Learning Resources</a>
+        <div class="mobile-drawer-divider"></div>
+        <div class="mobile-drawer-label">Learn More</div>
+        <a href="/#how-it-works">How It Works</a>
+        <a href="/#about">About SDG 4</a>
+        <div class="mobile-drawer-divider"></div>
+        <div class="mobile-drawer-label">Account</div>
+        <a href="/guest">Continue as Guest</a>
+        <a href="/register">Create Account</a>
+    </div>
+
+    <!-- Main Auth Container -->
+    <section class="section" style="min-height: calc(100vh - 160px); display: flex; align-items: center; justify-content: center; padding: 48px 1.5rem;">
+        <div class="problem-card hero-fade" style="max-width: 440px; width: 100%; padding: 36px 32px; box-shadow: var(--shadow-elevated);">
+            
+            <div style="text-align: center; margin-bottom: 28px;">
+                <div class="logo-badge" style="width: 48px; height: 48px; margin: 0 auto 16px auto;" aria-hidden="true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+                    </svg>
+                </div>
+                <h1 style="font-size: 26px; font-weight: 800; color: var(--navy-900); letter-spacing: -0.5px;">Student Login</h1>
+                <p style="font-size: 14px; color: var(--text-secondary); margin-top: 6px;">
+                    Sign in to access your persistent assessment history, learning analytics, and personalized study plans.
+                </p>
+            </div>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div style="margin-bottom: 20px;">
+                {% for category, message in messages %}
+                <div style="padding: 12px 16px; border-radius: var(--radius-sm); font-size: 13.5px; margin-bottom: 8px; line-height: 1.4; {% if category == 'error' %}background: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border);{% elif category == 'success' %}background: var(--success-bg); color: var(--success-text); border: 1px solid var(--success-border);{% else %}background: #EAF2F8; color: var(--navy-800); border: 1px solid var(--border-medium);{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <form action="{{ url_for('login') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                {% if request.args.get('next') %}
+                <input type="hidden" name="next" value="{{ request.args.get('next') }}">
+                {% endif %}
+
+                <div style="margin-bottom: 18px;">
+                    <label for="email" style="display: block; font-size: 13.5px; font-weight: 700; color: var(--navy-900); margin-bottom: 6px;">
+                        Email Address
+                    </label>
+                    <input type="email" id="email" name="email" required autocomplete="email" placeholder="student@university.edu"
+                           style="width: 100%; padding: 11px 14px; font-size: 14px; border: 1.5px solid var(--border-light); border-radius: var(--radius-md); background: #FFFFFF; color: var(--navy-900); outline: none; transition: border-color 0.2s ease;">
+                </div>
+
+                <div style="margin-bottom: 24px;">
+                    <label for="password" style="display: block; font-size: 13.5px; font-weight: 700; color: var(--navy-900); margin-bottom: 6px;">
+                        Password
+                    </label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="••••••••"
+                           style="width: 100%; padding: 11px 14px; font-size: 14px; border: 1.5px solid var(--border-light); border-radius: var(--radius-md); background: #FFFFFF; color: var(--navy-900); outline: none; transition: border-color 0.2s ease;">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-md" style="width: 100%; padding: 12px; font-size: 15px; margin-bottom: 14px;">
+                    Sign In
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </form>
+
+            <!-- Divider -->
+            <div style="display: flex; align-items: center; text-align: center; margin: 18px 0; color: var(--text-light); font-size: 12px;">
+                <div style="flex: 1; border-bottom: 1px solid var(--border-light);"></div>
+                <span style="padding: 0 10px; font-weight: 600; text-transform: uppercase;">Or</span>
+                <div style="flex: 1; border-bottom: 1px solid var(--border-light);"></div>
+            </div>
+
+            <!-- Guest Access Button -->
+            <a href="{{ url_for('guest_mode') }}" class="btn btn-secondary btn-md" style="width: 100%; padding: 11px; margin-bottom: 20px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                Continue as Guest
+            </a>
+
+            <!-- Registration Link -->
+            <div style="text-align: center; font-size: 13.5px; color: var(--text-secondary); border-top: 1px solid var(--border-light); padding-top: 16px;">
+                Don't have an account? 
+                <a href="{{ url_for('register') }}" style="color: var(--teal-700); font-weight: 700; text-decoration: none;">
+                    Create Account
+                </a>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Unified Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-bottom" style="border-top: none; padding-top: 0;">
+                <div>Student Learning Gap Finder (LearnGap) &middot; Advancing SDG 4 Quality Education</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile Drawer Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggle = document.getElementById('mobileNavToggle');
+            const drawer = document.getElementById('mobileDrawer');
+            if (toggle && drawer) {
+                toggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    drawer.classList.toggle('open');
+                });
+                document.addEventListener('click', function(e) {
+                    if (!toggle.contains(e.target) && !drawer.contains(e.target)) {
+                        drawer.classList.remove('open');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Select a subject to take a topic-wise diagnostic assessment on LearnGap.">
+    <title>Select Subject — LearnGap</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=6.0">
+</head>
+
+<body>
+
+    <!-- Unified Glassmorphic Header Navigation -->
+    <nav class="navbar" aria-label="Main Navigation">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <div class="logo-badge" aria-hidden="true">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                        <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                    </svg>
+                </div>
+                Learn<span>Gap</span>
+            </a>
+
+            <div class="nav-links">
+                <a href="/">Dashboard</a>
+                <a href="/subjects" class="nav-link-active">Subjects</a>
+                <a href="/progress">Progress</a>
+                <a href="/study-plan">Study Plan</a>
+                <a href="/resources">Learning Resources</a>
+                <div class="nav-dropdown">
+                    <button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="true">
+                        <span>More</span>
+                        <svg class="dropdown-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                    </button>
+                    <div class="nav-dropdown-menu">
+                        <a href="/#how-it-works">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            <span>How It Works</span>
+                        </a>
+                        <a href="/#about">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                            <span>About SDG 4</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-cta">
+                {% if current_user %}
+                    <a href="/account" class="user-pill">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <span>{{ current_user.name }}</span>
+                    </a>
+                    <a href="/logout" class="btn btn-outline btn-sm">Log Out</a>
+                {% else %}
+                    <a href="/guest" class="btn btn-outline btn-sm nav-btn-guest" title="Explore without creating an account">
+                        Continue as Guest
+                    </a>
+                    <a href="/login" class="btn btn-secondary btn-sm">
+                        Student Login
+                    </a>
+                    <a href="/register" class="btn btn-primary btn-sm">
+                        Create Account
+                    </a>
+                {% endif %}
+                <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle Navigation Menu">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation Drawer -->
+    <div class="mobile-menu-drawer" id="mobileDrawer">
+        <div class="mobile-drawer-label">Navigation</div>
+        <a href="/">Dashboard</a>
+        <a href="/subjects" class="nav-link-active">Subjects</a>
+        <a href="/progress">Progress</a>
+        <a href="/study-plan">Study Plan</a>
+        <a href="/resources">Learning Resources</a>
+        <div class="mobile-drawer-divider"></div>
+        <div class="mobile-drawer-label">Learn More</div>
+        <a href="/#how-it-works">How It Works</a>
+        <a href="/#about">About SDG 4</a>
+        <div class="mobile-drawer-divider"></div>
+        <div class="mobile-drawer-label">Account</div>
+        {% if current_user %}
+            <a href="/account">My Account ({{ current_user.name }})</a>
+            <a href="/logout">Log Out</a>
+        {% else %}
+            <a href="/guest">Continue as Guest</a>
+            <a href="/login">Student Login</a>
+            <a href="/register">Create Account</a>
+        {% endif %}
+    </div>
+
+    <!-- Subjects Header Banner -->
+    <section class="hero hero-subpage">
+        <div class="section-container">
+            <div class="section-title" style="margin-bottom: 0;">
+                <span>START YOUR ASSESSMENT</span>
+                <h1 style="font-size: 36px; font-weight: 800; color: var(--navy-900); margin-top: 6px;">
+                    Select a Subject
+                </h1>
+                <p>Choose an assessment subject to identify your topic-level learning gaps and receive curated study guidance.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Subjects Curriculum Grid -->
+    <section class="section" style="padding-top: 48px;">
+        <div class="section-container">
+            <div class="subject-grid reveal-on-scroll">
+                {% for sub in subjects %}
+                <div class="subject-card">
+                    <div>
+                        <div class="subject-card-top">
+                            <div class="subject-icon-box">
+                                {% if sub.id == 'python' %}
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="16 18 22 12 16 6"></polyline>
+                                    <polyline points="8 6 2 12 8 18"></polyline>
+                                </svg>
+                                {% elif sub.id == 'ml' %}
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="18" cy="5" r="3"></circle>
+                                    <circle cx="6" cy="12" r="3"></circle>
+                                    <circle cx="18" cy="19" r="3"></circle>
+                                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                                </svg>
+                                {% elif sub.id == 'dsa' %}
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                                </svg>
+                                {% elif sub.id == 'cn' %}
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                </svg>
+                                {% elif sub.id == 'dbms' %}
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                                </svg>
+                                {% else %}
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+                                    <rect x="9" y="9" width="6" height="6"></rect>
+                                    <line x1="9" y1="1" x2="9" y2="4"></line>
+                                    <line x1="15" y1="1" x2="15" y2="4"></line>
+                                    <line x1="9" y1="20" x2="9" y2="23"></line>
+                                    <line x1="15" y1="20" x2="15" y2="23"></line>
+                                    <line x1="20" y1="9" x2="23" y2="9"></line>
+                                    <line x1="20" y1="14" x2="23" y2="14"></line>
+                                    <line x1="1" y1="9" x2="4" y2="9"></line>
+                                    <line x1="1" y1="14" x2="4" y2="14"></line>
+                                </svg>
+                                {% endif %}
+                            </div>
+                            {% if sub.has_attempted %}
+                            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                                <span class="badge-pill badge-green" title="Best score achieved">
+                                    Best: {{ sub.best_pct }}%
+                                </span>
+                                {% if sub.latest_pct is not none %}
+                                <span class="badge-pill {% if sub.latest_pct >= 70 %}badge-green{% elif sub.latest_pct >= 50 %}badge-amber{% else %}badge-red{% endif %}" title="Latest test score">
+                                    Latest: {{ sub.latest_pct }}%
+                                </span>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <span class="badge-pill badge-neutral">
+                                Not Attempted
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <h3>{{ sub.name }}</h3>
+                        <p>{{ sub.description }}</p>
+
+                        <!-- Real Database Progress Mini-Bar -->
+                        <div class="subject-progress-mini">
+                            {% if sub.has_attempted %}
+                            <div style="flex: 1; margin-right: 12px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-weight: 700; font-size: 11px; color: var(--navy-900);">
+                                    <span>Mastery Score</span>
+                                    <span>{{ sub.best_pct }}%</span>
+                                </div>
+                                <div style="height: 6px; background: var(--border-light); border-radius: 999px; overflow: hidden;">
+                                    <div class="subject-progress-fill" style="width: {{ sub.best_pct }}%; background: {% if sub.best_pct >= 70 %}var(--success){% elif sub.best_pct >= 50 %}var(--warning){% else %}var(--danger){% endif %};"></div>
+                                </div>
+                            </div>
+                            <span style="color: var(--text-muted); font-size: 11px; font-weight: 600; white-space: nowrap;">{{ sub.attempt_count }} test(s)</span>
+                            {% else %}
+                            <div style="color: var(--text-light); font-size: 11.5px; font-weight: 500;">{{ sub.topics | length }} Topics &middot; 10 Questions</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Topics Preview Pills -->
+                        <div class="topic-pills-wrap">
+                            {% for t in sub.topics %}
+                            <span class="topic-pill">{{ t }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="subject-card-actions">
+                        <a href="/quiz/{{ sub.id }}" class="btn btn-primary btn-md" style="width: 100%;">
+                            {% if sub.has_attempted %}Retake Assessment{% else %}Start Assessment{% endif %}
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </a>
+                        <a href="/resources?subject={{ sub.id }}" class="btn btn-secondary btn-sm" style="width: 100%;">
+                            Explore Resources
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Unified Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <div class="logo-badge" style="width: 28px; height: 28px;" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                        </svg>
+                    </div>
+                    Learn<span>Gap</span>
+                </div>
+                <div class="footer-links">
+                    <a href="/">Dashboard</a>
+                    <a href="/subjects">Subjects</a>
+                    <a href="/resources">Learning Resources</a>
+                    <a href="/progress">Progress Dashboard</a>
+                    <a href="/#how-it-works">How It Works</a>
+                    <a href="/#about">SDG 4 Education</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div>Student Learning Gap Finder (LearnGap) &middot; Diagnostic Assessments &amp; Curated Resources</div>
+                <div>Advancing UN Sustainable Development Goal 4 &middot; Quality Education</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Animation Engine & Mobile Menu Toggle Script -->
+    <script src="{{ url_for('static', filename='animations.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggle = document.getElementById('mobileNavToggle');
+            const drawer = document.getElementById('mobileDrawer');
+            if (toggle && drawer) {
+                toggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    drawer.classList.toggle('open');
+                });
+                document.addEventListener('click', function(e) {
+                    if (!toggle.contains(e.target) && !drawer.contains(e.target)) {
+                        drawer.classList.remove('open');
+                    }
+                });
+            }
+        });
+    </script>
+
+</body>
+
+</html>

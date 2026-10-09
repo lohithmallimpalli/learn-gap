@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="View your diagnostic assessment results, topic-wise gap breakdown, and AI study coach plan on LearnGap.">
+    <title>{{ subject_name }} Results — LearnGap</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=6.0">
+</head>
+
+<body>
+
+    <!-- Unified Glassmorphic Header Navigation -->
+    <nav class="navbar" aria-label="Main Navigation">
+        <div class="nav-container">
+            <a href="/" class="logo">
+                <div class="logo-badge" aria-hidden="true">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                        <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                    </svg>
+                </div>
+                Learn<span>Gap</span>
+            </a>
+
+            <div class="nav-links">
+                <a href="/">Dashboard</a>
+                <a href="/subjects" class="nav-link-active">Subjects</a>
+                <a href="/progress">Progress</a>
+                <a href="/study-plan/{{ subject_id }}">Study Plan</a>
+                <a href="/resources">Learning Resources</a>
+                <div class="nav-dropdown">
+                    <button class="nav-dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="true">
+                        <span>More</span>
+                        <svg class="dropdown-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                    </button>
+                    <div class="nav-dropdown-menu">
+                        <a href="/#how-it-works">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            <span>How It Works</span>
+                        </a>
+                        <a href="/#about">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                            <span>About SDG 4</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-cta">
+                {% if current_user %}
+                    <a href="/account" class="user-pill">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <span>{{ current_user.name }}</span>
+                    </a>
+                    <a href="/logout" class="btn btn-outline btn-sm">Log Out</a>
+                {% else %}
+                    <a href="/guest" class="btn btn-outline btn-sm nav-btn-guest" title="Explore without creating an account">
+                        Continue as Guest
+                    </a>
+                    <a href="/login" class="btn btn-secondary btn-sm">
+                        Student Login
+                    </a>
+                    <a href="/register" class="btn btn-primary btn-sm">
+                        Create Account
+                    </a>
+                {% endif %}
+                <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle Navigation Menu">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation Drawer -->
+    <div class="mobile-menu-drawer" id="mobileDrawer">
+        <div class="mobile-drawer-label">Navigation</div>
+        <a href="/">Dashboard</a>
+        <a href="/subjects" class="nav-link-active">Subjects</a>
+        <a href="/progress">Progress</a>
+        <a href="/study-plan/{{ subject_id }}">Study Plan</a>
+        <a href="/resources">Learning Resources</a>
+        <div class="mobile-drawer-divider"></div>
+        <div class="mobile-drawer-label">Learn More</div>
+        <a href="/#how-it-works">How It Works</a>
+        <a href="/#about">About SDG 4</a>
+        <div class="mobile-drawer-divider"></div>
+        <div class="mobile-drawer-label">Account</div>
+        {% if current_user %}
+            <a href="/account">My Account ({{ current_user.name }})</a>
+            <a href="/logout">Log Out</a>
+        {% else %}
+            <a href="/guest">Continue as Guest</a>
+            <a href="/login">Student Login</a>
+            <a href="/register">Create Account</a>
+        {% endif %}
+    </div>
+
+    <!-- Results Header Banner -->
+    <section class="hero hero-subpage">
+        <div class="section-container" style="max-width: 1040px; margin: 0 auto;">
+            <div class="section-title" style="margin-bottom: 0;">
+                <span>ASSESSMENT DIAGNOSTIC REPORT</span>
+                <h1 style="font-size: 36px; font-weight: 800; color: var(--navy-900); margin-top: 6px;">
+                    Your Learning Analysis
+                </h1>
+                <p>Diagnostic results and conceptual gap breakdown for <strong>{{ subject_name }}</strong>.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results Content Section -->
+    <section class="section" style="padding-top: 48px;">
+        <div class="section-container" style="max-width: 1040px; margin: 0 auto;">
+
+            <!-- Guest Session Conversion Alert -->
+            {% if is_guest %}
+            <div class="problem-card reveal-on-scroll" style="background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%); border: 1.5px solid #86efac; border-radius: 16px; padding: 20px 24px; margin: 0 auto 32px auto; max-width: 800px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 44px; height: 44px; border-radius: 12px; background: #059669; color: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    </div>
+                    <div>
+                        <strong style="font-size: 1rem; color: #064e3b; display: block; margin-bottom: 2px;">Guest Mode Assessment: Save Your Progress Permanently</strong>
+                        <span style="font-size: 0.85rem; color: #047857;">Your diagnostic score, answer review, and 7-day study plan are stored in your temporary session. Create a free account to preserve them!</span>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <a href="/register" class="btn btn-primary btn-sm" style="background: #059669; border-color: #059669;">Create Free Account</a>
+                    <a href="/login" class="btn btn-outline btn-sm">Sign In</a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Overall Score Card -->
+            <div class="problem-card results-score-card" style="max-width: 600px; margin: 0 auto 40px auto; text-align: center; padding: 36px 28px;">
+                <span class="number" style="font-size: 12px; letter-spacing: 1.5px;">OVERALL PERFORMANCE</span>
+                <div style="font-size: 52px; font-weight: 800; color: var(--navy-900); line-height: 1; margin: 12px 0 16px 0;" data-counter="{{ score }}/{{ total }}">
+                    {{ score }}<span style="font-size: 28px; color: var(--text-light); font-weight: 600;">/{{ total }}</span>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    {% if percentage >= 70 %}
+                    <span class="badge-pill badge-green" style="font-size: 13px; padding: 6px 16px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span data-counter="{{ percentage }}%">{{ percentage }}%</span> &middot; Strong Performance
+                    </span>
+                    {% elif percentage >= 50 %}
+                    <span class="badge-pill badge-amber" style="font-size: 13px; padding: 6px 16px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <span data-counter="{{ percentage }}%">{{ percentage }}%</span> &middot; Needs Targeted Practice
+                    </span>
+                    {% else %}
+                    <span class="badge-pill badge-red" style="font-size: 13px; padding: 6px 16px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        <span data-counter="{{ percentage }}%">{{ percentage }}%</span> &middot; Critical Revision Needed
+                    </span>
+                    {% endif %}
+                </div>
+
+                <p style="color: var(--text-secondary); font-size: 14.5px; max-width: 480px; margin: 0 auto;">
+                    {% if percentage >= 70 %}
+                    You demonstrated solid conceptual comprehension across {{ subject_name }}. Review specific hints below to lock in complete mastery.
+                    {% elif percentage >= 50 %}
+                    You have a working foundation, but specific algorithmic mechanisms need dedicated revision.
+                    {% else %}
+                    Multiple core topics require structured revision and practical exercises.
+                    {% endif %}
+                </p>
+            </div>
+
+            <!-- Highlights: Strongest & Priority Topics -->
+            <div class="reveal-on-scroll" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 48px;">
+                <div class="problem-card" style="border-top: 4px solid var(--success);">
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--success); letter-spacing: 0.8px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        STRONGEST TOPIC
+                    </div>
+                    <h3 style="margin-top: 10px; font-size: 19px; color: var(--navy-900);">
+                        {{ strongest_topic or 'Solid Execution' }}
+                    </h3>
+                    <p style="font-size: 13.5px; color: var(--text-secondary); margin-top: 6px;">
+                        {% if strongest_topic %}
+                        Highest accuracy on this assessment. You answered questions in this area with confidence.
+                        {% else %}
+                        Keep practicing to establish high-confidence mastery across topics.
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="problem-card" style="border-top: 4px solid {% if weakest_topic %}var(--danger){% else %}var(--success){% endif %};">
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: {% if weakest_topic %}var(--danger){% else %}var(--success){% endif %}; letter-spacing: 0.8px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        PRIORITY GAP TOPIC
+                    </div>
+                    <h3 style="margin-top: 10px; font-size: 19px; color: var(--navy-900);">
+                        {{ weakest_topic or 'No Critical Gaps Detected' }}
+                    </h3>
+                    <p style="font-size: 13.5px; color: var(--text-secondary); margin-top: 6px;">
+                        {% if weakest_topic %}
+                        We recommend prioritizing revision in this topic first before advancing.
+                        {% else %}
+                        Great job! All assessed topics satisfied the mastery threshold.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Topic-wise Learning Gaps Grid -->
+            <div style="margin-bottom: 56px;">
+                <div class="section-title reveal-on-scroll" style="margin-bottom: 28px;">
+                    <span>DETAILED DIAGNOSTIC</span>
+                    <h2 style="font-size: 26px;">Topic Performance Breakdown</h2>
+                </div>
+
+                <div class="problem-grid reveal-on-scroll" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+                    {% for result in topic_results %}
+                    <div class="problem-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <div class="number" data-counter="{{ result.score }}%" style="font-size: 24px; font-weight: 800; margin-bottom: 0;">
+                                    {{ result.score }}%
+                                </div>
+                                {% if result.status == "Strong" %}
+                                <span class="badge-pill badge-green">Strong</span>
+                                {% elif result.status == "Needs Improvement" %}
+                                <span class="badge-pill badge-amber">Improve</span>
+                                {% else %}
+                                <span class="badge-pill badge-red">Weak</span>
+                                {% endif %}
+                            </div>
+
+                            <h3 style="font-size: 18px; color: var(--navy-900); margin-bottom: 4px;">{{ result.topic }}</h3>
+                            <p style="font-size: 13px; color: var(--text-secondary);">
+                                Answered {{ result.correct }}/{{ result.total }} questions correctly
+                            </p>
+                            <div class="topic-progress-track">
+                                <div class="bar-chart-fill {% if result.score >= 70 %}bar-fill-strong{% elif result.score >= 50 %}bar-fill-improve{% else %}bar-fill-weak{% endif %}"
+                                     style="width: {{ result.score }}%;"></div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border-light); display: flex; justify-content: flex-end;">
+                            <a href="/resources?subject={{ subject_id }}&topic={{ result.topic | urlencode }}"
+                               class="btn btn-outline btn-sm"
+                               title="View books, videos, and documentation for {{ result.topic }}">
+                                Study Topic
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    <polyline points="12 5 19 12 12 19"></polyline>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- ML Learning Pattern Analysis Section -->
+            {% if ml_analysis and ml_analysis.status == "success" %}
+            <div class="reveal-on-scroll" style="margin-bottom: 56px;">
+                <div class="section-title" style="margin-bottom: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                        <span>MACHINE LEARNING INSIGHTS</span>
+                        <span class="badge-pill" style="background: var(--teal-50, #F0FDFA); color: var(--teal-700, #0F766E); border: 1px solid var(--teal-200, #99F6E4); font-size: 12px; font-weight: 600; padding: 4px 12px; display: inline-flex; align-items: center; gap: 6px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M12 2v3m0 14v3M2 12h3m14 0h3"></path>
+                                <path d="m4.93 4.93 2.12 2.12m9.9 9.9 2.12 2.12M4.93 19.07l2.12-2.12m9.9-9.9 2.12-2.12"></path>
+                            </svg>
+                            scikit-learn K-Means
+                        </span>
+                    </div>
+                    <h2 style="font-size: 26px; margin-top: 6px;">ML Learning Pattern Analysis</h2>
+                    <p>K-Means based analysis of your topic performance</p>
+                </div>
+
+                <div class="problem-card" style="padding: 28px 32px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-bottom: 24px;">
+                        {% for group in ml_analysis.groups %}
+                        <div style="background: var(--bg-card-tinted, #FAFCFE); border: 1px solid var(--border-light, #DCE7EF); border-top: 4px solid {{ group.border_color }}; border-radius: 12px; padding: 20px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                                <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.8px; color: {{ group.border_color }}; text-transform: uppercase;">
+                                    {{ group.name }}
+                                </span>
+                                <span class="badge-pill {{ group.badge_class }}" style="font-size: 11px; padding: 2px 10px;">
+                                    {{ group.topics|length }} topic{% if group.topics|length != 1 %}s{% endif %}
+                                </span>
+                            </div>
+                            {% if group.topics %}
+                            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;">
+                                {% for item in group.topics %}
+                                <li style="display: flex; align-items: center; justify-content: space-between; font-size: 14px; color: var(--navy-900, #122033);">
+                                    <span style="display: inline-flex; align-items: center; gap: 8px;">
+                                        <span style="color: {{ group.border_color }}; font-size: 16px; line-height: 1;">&bull;</span>
+                                        <strong>{{ item.topic }}</strong>
+                                    </span>
+                                    <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary, #52647A);">{{ item.score }}%</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p style="font-size: 13px; color: var(--text-light, #8FA0B5); margin: 0; font-style: italic;">
+                                No topics in this pattern tier.
+                            </p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div style="padding-top: 16px; border-top: 1px solid var(--border-light, #DCE7EF); display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-secondary, #52647A);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--teal-700, #0F766E); flex-shrink: 0;">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        <span>LearnGap uses K-Means clustering to group topic-level performance into learning patterns and identify areas that may need additional attention.</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- AI Study Coach Section -->
+            <div class="reveal-on-scroll" style="margin-bottom: 56px;">
+                <div class="section-title" style="margin-bottom: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                        <span>INTELLIGENT TUTORING</span>
+                        {% if 'offline-ai-badge' in ai_coach or 'Curated Offline' in ai_coach or 'Curated offline' in ai_coach %}
+                        <span class="badge-pill" style="background: #EAF2F8; color: var(--navy-800); border: 1px solid var(--border-medium); font-size: 12px; font-weight: 600; padding: 4px 12px; display: inline-flex; align-items: center; gap: 6px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                            </svg>
+                            Curated Offline Guide
+                        </span>
+                        {% else %}
+                        <span class="badge-pill badge-green" style="font-size: 12px; font-weight: 600; padding: 4px 12px; display: inline-flex; align-items: center; gap: 6px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+                            </svg>
+                            Active Gemini AI Coach
+                        </span>
+                        {% endif %}
+                    </div>
+                    <h2 style="font-size: 26px; margin-top: 6px;">Your AI Study Coach</h2>
+                    <p>Personalized study strategy and memory hooks for {{ subject_name }}.</p>
+                </div>
+
+                <div class="problem-card ai-coach-card" style="padding: 32px;">
+                    <div class="ai-coach-content">
+                        {{ ai_coach | safe }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personalized 7-Day Study Plan Callout -->
+            <div class="problem-card reveal-on-scroll" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border-radius: 18px; padding: 28px 32px; color: white; margin-bottom: 56px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; box-shadow: 0 10px 30px rgba(2, 132, 199, 0.25);">
+                <div>
+                    <span style="background: rgba(255, 255, 255, 0.2); font-size: 0.78rem; font-weight: 700; padding: 4px 12px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.5px;">Customized 7-Day Curriculum</span>
+                    <h3 style="color: white; font-size: 1.45rem; font-weight: 700; margin: 10px 0 6px 0;">Your Step-by-Step Gap Closure Plan</h3>
+                    <p style="color: #e0f2fe; font-size: 0.95rem; margin: 0; max-width: 620px; line-height: 1.5;">We transformed your assessment gaps into an actionable 7-day schedule with daily practice goals, official documentation, and interactive completion tracking.</p>
+                </div>
+                <a href="/study-plan/{{ subject_id }}" class="btn btn-secondary btn-md" style="background: white; color: #0284c7; border: none; font-weight: 700; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);">
+                    Open 7-Day Study Plan &rarr;
+                </a>
+            </div>
+
+            <!-- Detailed Question-by-Question Solution Review -->
+            {% if answers %}
+            <div class="reveal-on-scroll" style="margin-bottom: 56px;" id="answer-review">
+                <div class="section-title" style="margin-bottom: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                        <span>DETAILED SOLUTIONS</span>
+                        <div style="display: flex; gap: 8px;" id="review-filter-tabs">
+                            <button type="button" class="btn btn-sm btn-primary review-tab-btn" data-filter="all" onclick="filterReviewQuestions('all', this)">
+                                All ({{ answers|length }})
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline review-tab-btn" data-filter="incorrect" onclick="filterReviewQuestions('incorrect', this)">
+                                Incorrect Only
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline review-tab-btn" data-filter="correct" onclick="filterReviewQuestions('correct', this)">
+                                Correct Only
+                            </button>
+                        </div>
+                    </div>
+                    <h2 style="font-size: 26px; margin-top: 6px;">Question-by-Question Solution Review</h2>
+                    <p>Review each question, your submitted response, the verified correct solution, and technical explanations.</p>
+                </div>
+
+                <div class="review-questions-container" style="display: flex; flex-direction: column; gap: 18px;">
+                    {% for a in answers %}
+                    <div class="problem-card review-question-card" data-status="{% if a.is_correct %}correct{% else %}incorrect{% endif %}" style="padding: 24px; border-left: 5px solid {% if a.is_correct %}#10b981{% else %}#ef4444{% endif %}; transition: all 0.2s ease;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                <span style="font-weight: 800; color: #0f172a; font-size: 0.95rem;">Question {{ loop.index }}</span>
+                                <span style="background: #f1f5f9; color: #475569; font-size: 0.78rem; font-weight: 600; padding: 2px 8px; border-radius: 6px;">{{ a.topic }}</span>
+                            </div>
+                            <span class="badge-pill {% if a.is_correct %}badge-green{% else %}badge-red{% endif %}" style="font-size: 0.8rem; font-weight: 700;">
+                                {% if a.is_correct %}
+                                ✓ Correct
+                                {% else %}
+                                ✗ Needs Revision
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <h4 style="font-size: 1.05rem; font-weight: 600; color: #1e293b; margin: 0 0 14px 0; line-height: 1.5;">
+                            {{ a.question }}
+                        </h4>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 14px;">
+                            <div style="background: {% if a.is_correct %}#f0fdf4{% else %}#fef2f2{% endif %}; border: 1px solid {% if a.is_correct %}#bbf7d0{% else %}#fecaca{% endif %}; border-radius: 10px; padding: 12px 14px;">
+                                <div style="font-size: 0.75rem; font-weight: 700; color: {% if a.is_correct %}#15803d{% else %}#b91c1c{% endif %}; text-transform: uppercase; margin-bottom: 4px;">Your Answer</div>
+                                <div style="font-size: 0.92rem; font-weight: 600; color: #1e293b;">
+                                    {{ a.user_answer or 'No answer selected' }}
+                                </div>
+                            </div>
+
+                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px;">
+                                <div style="font-size: 0.75rem; font-weight: 700; color: #0369a1; text-transform: uppercase; margin-bottom: 4px;">Correct Solution</div>
+                                <div style="font-size: 0.92rem; font-weight: 600; color: #1e293b;">
+                                    {{ a.correct_answer }}
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if a.explanation %}
+                        <div style="background: #f8fafc; border-left: 3px solid #0ea5e9; border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: 0.88rem; color: #475569; line-height: 1.5;">
+                            <strong style="color: #0369a1;">Concept Explanation:</strong> {{ a.explanation }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Personalized Resources Embedded on Results Page -->
+            {% if recommended_resources %}
+            <div class="reveal-on-scroll" style="margin-bottom: 56px;">
+                <div class="section-title" style="margin-bottom: 24px;">
+                    <span>VERIFIED MATERIALS</span>
+                    <h2 style="font-size: 26px;">Curated Learning Resources for Your Gaps</h2>
+                    <p>Targeted textbooks, official documentation, and video tutorials matching your weakest topics.</p>
+                </div>
+
+                <div class="resource-grid">
+                    {% for res in recommended_resources %}
+                    <div class="resource-card">
+                        <div>
+                            <div style="display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;">
+                                <span class="badge-pill type-badge">{{ res.resource_type }}</span>
+                                <span class="badge-pill diff-badge">{{ res.difficulty }}</span>
+                                <span class="badge-pill access-badge {% if 'Free' in res.access_type %}free{% else %}paid{% endif %}">
+                                    {{ res.access_type }}
+                                </span>
+                            </div>
+
+                            <h4>{{ res.title }}</h4>
+
+                            <div class="resource-meta">
+                                {{ res.provider }} &middot; <span>{{ res.topic }}</span>
+                            </div>
+
+                            <p>{{ res.description }}</p>
+                        </div>
+
+                        <div class="resource-card-footer">
+                            <span style="font-size: 12px; color: var(--text-light);">{{ res.subject_name }}</span>
+                            <a href="{{ res.url }}" target="_blank" rel="noopener noreferrer" class="open-resource-btn">
+                                Open Resource
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="7" y1="17" x2="17" y2="7"></line>
+                                    <polyline points="7 7 17 7 17 17"></polyline>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Next Step Actions Toolbar -->
+            <div class="problem-card reveal-on-scroll" style="text-align: center; padding: 36px 24px;">
+                <h3 style="font-size: 20px; color: var(--navy-900); margin-bottom: 8px;">Ready to Take the Next Step?</h3>
+                <p style="color: var(--text-secondary); font-size: 14.5px; max-width: 540px; margin: 0 auto 24px auto;">
+                    Review your study guide, explore curated resources, retake this assessment to verify your improvement, or view your overall analytics.
+                </p>
+
+                <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                    <a href="/quiz/{{ subject_id }}" class="btn btn-primary btn-md">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <polyline points="1 20 1 14 7 14"></polyline>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                        Retake Assessment
+                    </a>
+                    <a href="/study-plan/{{ subject_id }}" class="btn btn-secondary btn-md">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        7-Day Study Plan
+                    </a>
+                    <a href="/resources?subject={{ subject_id }}" class="btn btn-secondary btn-md">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                        </svg>
+                        Learning Resources
+                    </a>
+                    <a href="/progress" class="btn btn-outline btn-md">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                        </svg>
+                        Progress Dashboard
+                    </a>
+                    <a href="/subjects" class="btn btn-outline btn-md">
+                        Back to Subjects
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Unified Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <div class="logo-badge" style="width: 28px; height: 28px;" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                        </svg>
+                    </div>
+                    Learn<span>Gap</span>
+                </div>
+                <div class="footer-links">
+                    <a href="/">Dashboard</a>
+                    <a href="/subjects">Subjects</a>
+                    <a href="/resources">Learning Resources</a>
+                    <a href="/progress">Progress Dashboard</a>
+                    <a href="/study-plan/{{ subject_id }}">7-Day Plan</a>
+                    <a href="/#about">SDG 4 Education</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div>Student Learning Gap Finder (LearnGap) &middot; Diagnostic Assessments &amp; Curated Resources</div>
+                <div>Advancing UN Sustainable Development Goal 4 &middot; Quality Education</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Interactive Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggle = document.getElementById('mobileNavToggle');
+            const drawer = document.getElementById('mobileDrawer');
+            if (toggle && drawer) {
+                toggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    drawer.classList.toggle('open');
+                });
+                document.addEventListener('click', function(e) {
+                    if (!toggle.contains(e.target) && !drawer.contains(e.target)) {
+                        drawer.classList.remove('open');
+                    }
+                });
+            }
+        });
+
+        function filterReviewQuestions(status, clickedBtn) {
+            const buttons = document.querySelectorAll('.review-tab-btn');
+            buttons.forEach(b => {
+                b.classList.remove('btn-primary');
+                b.classList.add('btn-outline');
+            });
+            if (clickedBtn) {
+                clickedBtn.classList.remove('btn-outline');
+                clickedBtn.classList.add('btn-primary');
+            }
+
+            const cards = document.querySelectorAll('.review-question-card');
+            cards.forEach(card => {
+                const cardStatus = card.getAttribute('data-status');
+                if (status === 'all' || cardStatus === status) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+    <script src="{{ url_for('static', filename='animations.js') }}"></script>
+</body>
+
+</html>

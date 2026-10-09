@@ -1,0 +1,38 @@
+# Environment and Secrets (CRITICAL: Never commit API keys or production secrets)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+service_account*.json
+
+# Python virtual environment
+venv/
+.venv/
+env/
+
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Database & Backups
+# Keep local developer backups and journals out of version control
+*.db-journal
+*.db-wal
+learngap_backup*.db
+
+# Logs
+*.log
+logs/
+
+# IDE, OS & Editor artifacts
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+*.db
+*.db.bak
